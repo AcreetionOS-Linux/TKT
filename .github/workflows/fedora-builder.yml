@@ -37,7 +37,7 @@ jobs:
       - name: Install git (needed for checkout)
         run: dnf install git -y
 
-      - name: Checkount linux-tkg
+      - name: Checkount Alpha
         uses: actions/checkout@v4
 
       - name: fix git folder ownership

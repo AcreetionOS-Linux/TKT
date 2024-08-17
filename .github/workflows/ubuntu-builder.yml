@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkount linux-tkg
+      - name: Checkount Alpha
         uses: actions/checkout@v4
 
       # - name: "[debug] make dummy modprobed-db file for faster ci"

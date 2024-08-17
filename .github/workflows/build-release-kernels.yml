@@ -15,7 +15,7 @@ jobs:
       latest_kernel: ${{ steps.check_for_new_kernel.outputs.latest_kernel }}
 
     steps:
-      - name: Checkount linux-tkg
+      - name: Checkount Alpha
         uses: actions/checkout@v3.0.2
 
       # Get latest release in repo, so we compare its version

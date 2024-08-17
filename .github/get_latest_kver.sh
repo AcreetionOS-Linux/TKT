@@ -6,7 +6,7 @@ msg2() {
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-source "$SCRIPT_DIR/../linux-tkg-config/prepare"
+source "$SCRIPT_DIR/../config/prepare"
 trap - EXIT
 
 # needed to call _set_kver_internal_vars

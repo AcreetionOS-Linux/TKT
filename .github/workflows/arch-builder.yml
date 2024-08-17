@@ -11,7 +11,7 @@ env:
   _waydroid: "true"
   _processor_opt: "generic"
   _git_mirror: "github.com"
-  PKGDEST: "/tmp/linux-tkg"
+  PKGDEST: "/tmp/TKT"
   _debugdisable: "true"
   _noccache: "true"
   _STRIP: "true"
@@ -41,7 +41,7 @@ jobs:
       - name: Install git
         run: pacman -Syu --noconfirm git
 
-      - name: Checkount linux-tkg
+      - name: Checkount Alpha
         uses: actions/checkout@v4
 
       # 1. Install deps needed for building and sudo
