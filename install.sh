@@ -111,7 +111,7 @@ if [ "$1" = "install" ] || [ "$1" = "config" ]; then
   fi
 
   # Run init script that is also run in PKGBUILD, it will define some env vars that we will use
-  _tkt_initscript
+  _tkg_initscript
 
   if [[ "${_compiler}" = "llvm" && "${_distro}" =~ ^(Generic|Gentoo)$ && "${_libunwind_replace}" = "true" ]]; then
       export LDFLAGS_MODULE="-unwindlib=libunwind"
@@ -134,7 +134,7 @@ if [ "$1" = "install" ] || [ "$1" = "config" ]; then
     _distro=""
   fi
 
-  _tkt_srcprep
+  _tkg_srcprep
 
   _build_dir="$_kernel_work_folder_abs/.."
 

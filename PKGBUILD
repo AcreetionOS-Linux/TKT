@@ -25,7 +25,7 @@ source "$_where"/config/prepare
 
 # Make sure we're in a clean state
 if [ ! -e "$_where"/BIG_UGLY_FROGMINER ]; then
-  _tkt_initscript
+  _tkg_initscript
 fi
 
 source "$_where"/BIG_UGLY_FROGMINER
@@ -67,7 +67,7 @@ prepare() {
 
   source "${_where}/current_env"
 
-  _tkt_srcprep
+  _tkg_srcprep
 }
 
 build() {
@@ -125,8 +125,8 @@ hackbase() {
               'crda: to set the correct wireless channels of your country.'
               'linux-firmware: Firmware files for Linux'
               'modprobed-db: Keeps track of EVERY kernel module that has ever been probed. Useful for make localmodconfig.'
-              'nvidia-tkt: NVIDIA drivers for all installed kernels - non-dkms version.'
-              'nvidia-dkms-tkt: NVIDIA drivers for all installed kernels - dkms version.'
+              'nvidia-tkg: NVIDIA drivers for all installed kernels - non-dkms version.'
+              'nvidia-dkms-tkg: NVIDIA drivers for all installed kernels - dkms version.'
               'update-grub: Simple wrapper around grub-mkconfig.')
   if [ -e "${srcdir}/ntsync.rules" ]; then
     provides=("linux=${pkgver}" "${pkgbase}" VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE NTSYNC-MODULE ntsync-header)
