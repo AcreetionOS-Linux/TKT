@@ -1,8 +1,6 @@
-# TKT - A TKG fork
+## TKT - A TKG fork
 
-## linux-tkg
-
-This repository provides scripts to automatically download, patch and compile the Linux Kernel from [the official Linux git repository](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git), with a selection of patches aiming for better desktop/gaming experience. The provided patches can be enabled/disabled by editing the `customization.cfg` file and/or by following the interactive install script. You can use an external config file (default is `$HOME/.config/frogminer/linux-tkg.cfg`, tweakable with the `_EXT_CONFIG_PATH` variable in `customization.cfg`). You can also use your own patches (more information in `customization.cfg` file).
+This repository provides scripts to automatically download, patch and compile the Linux Kernel from [the official Linux git repository](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git), with a selection of patches aiming for better desktop/gaming experience. The provided patches can be enabled/disabled by editing the `customization.cfg` file and/or by following the interactive install script. You can use an external config file (default is `$HOME/.config/TKT.cfg`, tweakable with the `_EXT_CONFIG_PATH` variable in `customization.cfg`). You can also use your own patches (more information in `customization.cfg` file).
 
 ### Important information
 
@@ -24,7 +22,7 @@ Its current implementation doesn't allow for injecting additional schedulers at 
 However, using [Sched-ext](https://github.com/sched-ext/scx), it's possible to inject CPU schedulers at runtime. We offer support for it on ≥ 6.8 by default.
 Arch users can find scx schedulers on the [AUR](https://aur.archlinux.org/packages/scx-scheds) thanks to @sirlucjan (for persistence, set scheduler in "/etc/default/scx" and enable the `scx` service).
 
-Alternative schedulers are available to you in linux-tkg:
+Alternative schedulers are available to you in TKT:
 - Project C / PDS & BMQ by Alfred Chen: [blog](http://cchalpha.blogspot.com/ ), [code repository](https://gitlab.com/alfredchen/projectc)
 - MuQSS by Con Kolivas : [blog](http://ck-hack.blogspot.com/), [code repository](https://github.com/ckolivas/linux)
 - CacULE by Hamad Marri - CFS based : [code repository](https://github.com/hamadmarri/cacule-cpu-scheduler)
@@ -63,16 +61,16 @@ To apply your own patch files using the provided scripts, you will need to put t
 
 ### Install procedure
 
-For all the supported linux distributions, `linux-tkg` has to be cloned with `git`. Since it keeps a clone of the kernel's sources within (`linux-src-git`, created during the first build after a fresh clone), it is recommended to keep the cloned `linux-tkg` folder and simply update it with `git pull`, the install script does the necessary cleanup at every run.
+For all the supported linux distributions, `TKT` has to be cloned with `git`. Since it keeps a clone of the kernel's sources within (`linux-src-git`, created during the first build after a fresh clone), it is recommended to keep the cloned `TKT` folder and simply update it with `git pull`, the install script does the necessary cleanup at every run.
 
 #### Arch & derivatives
 ```shell
-git clone https://github.com/Frogging-Family/linux-tkg.git
-cd linux-tkg
+git clone https://github.com/ETJAKEOC/TKT.git
+cd TKT
 # Optional: edit the "customization.cfg" file
 makepkg -si
 ```
-The script will use a slightly modified Arch config from the `linux-tkg-config` folder, it can be changed through the `_configfile` variable in `customization.cfg`. The options selected at build-time are installed to `/usr/share/doc/$pkgbase/customization.cfg`, where `$pkgbase` is the package name.
+The script will use a slightly modified Arch config from the `TKT-config` folder, it can be changed through the `_configfile` variable in `customization.cfg`. The options selected at build-time are installed to `/usr/share/doc/$pkgbase/customization.cfg`, where `$pkgbase` is the package name.
 
 **Note:** the `base-devel` package group is expected to be installed, see [here](https://wiki.archlinux.org/title/Makepkg) for more information.
 
@@ -83,31 +81,31 @@ An issue has been reported for Ubuntu where the stock kernel cannot boot properl
 
 The interactive `install.sh` script will create, depending on the selected distro, `.deb` or `.rpm` packages, move them in the the subfolder `DEBS` or `RPMS` then prompts to install them with the distro's package manager.
 ```shell
-git clone https://github.com/Frogging-Family/linux-tkg.git
-cd linux-tkg
+git clone https://github.com/ETJAKEOC/TKT.git
+cd TKT
 # Optional: edit the "customization.cfg" file
 ./install.sh install
 ```
 Uninstalling custom kernels installed through the script has to be done
 manually. `install.sh` can can help out with some useful information:
 ```shell
-cd path/to/linux-tkg
+cd path/to/TKT
 ./install.sh uninstall-help
 ```
-The script will use a slightly modified Arch config from the `linux-tkg-config` folder, it can be changed through the `_configfile` variable in `customization.cfg`.
+The script will use a slightly modified Arch config from the `config` folder, it can be changed through the `_configfile` variable in `customization.cfg`.
 
 #### Generic install
 The interactive `install.sh` script can be used to perform a "Generic" install by choosing `Generic` when prompted. It git clones the kernel tree in the `linux-src-git` folder, patches the code and edits a `.config` file in it. The commands to do are the following:
 ```shell
-git clone https://github.com/Frogging-Family/linux-tkg.git
-cd linux-tkg
+git clone https://github.com/ETJAKEOC/TKT.git
+cd TKT
 # Optional: edit the "customization.cfg" file
 ./install.sh install
 ```
 The script will compile the kernel then prompt before doing the following:
 ```shell
-sudo cp -R . /usr/src/linux-tkg-${kernel_flavor}
-cd /usr/src/linux-tkg-${kernel_flavor}
+sudo cp -R . /usr/src/TKT-${kernel_flavor}
+cd /usr/src/TKT-${kernel_flavor}
 sudo make modules_install
 sudo make install
 sudo dracut --force --hostonly --kver $_kernelname $_dracut_options
@@ -125,8 +123,8 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 #### Gentoo
 The interactive `install.sh` script supports Gentoo by following the same procedure as `Generic`, symlinks the sources folder in `/usr/src/` to `/usr/src/linux`, then offers to do an `emerge @module-rebuild` for convenience
 ```shell
-git clone https://github.com/Frogging-Family/linux-tkg.git
-cd linux-tkg
+git clone https://github.com/ETJAKEOC/TKT.git
+cd TKT
 # Optional: edit the "customization.cfg" file
 ./install.sh install
 ```
