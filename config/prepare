@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # List of kernels that are maintained upstream
-_current_kernels=("6.11" "6.10" "6.9" "6.8" "6.7" "6.6" "6.5" "6.4" "6.1" "5.15")
+_current_kernels=("6.11" "6.10" "6.9" "6.8" "6.7" "6.6" "6.5" "6.4" "6.1")
 
 # List of kernels that are no longer maintained either upstream or locally
-_eol_kernels=("6.3" "6.2" "6.0" "5.19" "5.18" "5.17" "5.16" "5.14" "5.13" "5.12" "5.11" "5.9" "5.8" "5.7" "5.4.230" "5.10.135")
+_eol_kernels=("6.3" "6.2" "6.0")
 
 typeset -Ag _kernel_git_remotes
 _kernel_git_remotes=(
@@ -43,14 +43,6 @@ done
 # PREEMPT_RT's supported kernel subversion
 typeset -Ag _rt_subver_map
 _rt_subver_map=(
-  ["5.4"]="271"
-  ["5.9"]="1"
-  ["5.10"]="221"
-  ["5.11"]="4"
-  ["5.14"]="2"
-  ["5.15"]="160"
-  ["5.16"]="2"
-  ["5.17"]="1"
   ["6.0"]="5"
   ["6.1"]="99"
   ["6.3"]="3"
@@ -67,14 +59,6 @@ _rt_subver_map=(
 # We separated this to allow for forcing the application of the patch when _preempt_rt_force=1 on version mismatch
 typeset -Ag _rt_rev_map
 _rt_rev_map=(
-  ["5.4"]="89"
-  ["5.9"]="20"
-  ["5.10"]="113"
-  ["5.11"]="11"
-  ["5.14"]="21"
-  ["5.15"]="77"
-  ["5.16"]="19"
-  ["5.17"]="17"
   ["6.0"]="14"
   ["6.1"]="36"
   ["6.3"]="15"
@@ -288,33 +272,7 @@ _set_cpu_scheduler() {
   )
 
   # CPU SCHED selector - _projectc_unoff=1 sets unofficial Project C revision flag for a given version
-  if [ "$_kver" = "504" ]; then
-    _avail_cpu_scheds=("pds" "bmq" "muqss" "cacule" "cfs")
-  elif [ "$_kver" = "507" ]; then
-    _avail_cpu_scheds=("pds" "bmq" "muqss" "cfs")
-  elif [ "$_kver" = "508" ]; then
-    _avail_cpu_scheds=("upds" "pds" "bmq" "cfs")
-  elif [[ "$_kver" =~ ^(509|511)$ ]]; then
-    _avail_cpu_scheds=("upds" "pds" "bmq" "muqss" "cfs")
-  elif [ "$_kver" = "510" ]; then
-    _avail_cpu_scheds=("upds" "pds" "bmq" "muqss" "cacule" "cfs")
-  elif [ "$_kver" = "512" ]; then
-    _avail_cpu_scheds=("pds" "bmq" "muqss" "cacule" "cfs")
-  elif [ "$_kver" = "513" ]; then
-    _avail_cpu_scheds=("pds" "bmq" "muqss" "cacule" "cfs")
-  elif [ "$_kver" = "514" ]; then
-    _avail_cpu_scheds=("pds" "bmq" "cacule" "cfs")
-  elif [ "$_kver" = "515" ]; then
-    _avail_cpu_scheds=("pds" "bmq" "cacule" "tt" "bore" "cfs")
-  elif [ "$_kver" = "516" ]; then
-    _avail_cpu_scheds=("pds" "bmq" "cacule" "cfs")
-  elif [ "$_kver" = "517" ]; then
-    _avail_cpu_scheds=("pds" "bmq" "cacule" "tt" "cfs" "bore")
-  elif [ "$_kver" = "518" ]; then
-    _avail_cpu_scheds=("cfs" "pds" "bmq" "cacule" "tt" "bore")
-  elif [ "$_kver" = "519" ]; then
-    _avail_cpu_scheds=("cfs" "pds" "bmq" "cacule" "tt" "bore")
-  elif [ "$_kver" = "600" ]; then
+  if [ "$_kver" = "600" ]; then
     _avail_cpu_scheds=("cfs" "pds" "bmq" "tt" "bore")
   elif [ "$_kver" = "601" ]; then
     _avail_cpu_scheds=("cfs" "pds" "bmq" "tt" "bore")
@@ -394,7 +352,7 @@ _set_compiler(){
       exit 1
     else
       plain "Which compiler do you want to use?"
-      _compiler_array_text=("GCC (recommended)" "Clang/LLVM")
+      _compiler_array_text=("GCC" "Clang/LLVM (recommended)")
       _compiler_array=("gcc" "llvm")
 
       _default_index="0"
@@ -678,16 +636,7 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
 
   _patch_location="$srcdir"
 
-  if [ "$_kver" = "504" ]; then
-    _patch_name="more-uarches-for-kernel-4.19-5.4"
-  elif [ "$_kver" = "507" ]; then
-    _outdated="outdated_versions/"
-    _patch_name="enable_additional_cpu_optimizations_for_gcc_v10.1%2B_kernel_v5.7"
-  elif (( 508 <= "$_kver" &&  "$_kver" <= 514 )); then
-    _patch_name="more-uarches-for-kernel-5.8-5.14"
-  elif [[ "$_kver" =~ ^(515|516)$ ]]; then
-    _patch_name="more-uarches-for-kernel-5.15-5.16"
-  elif ( [ "$_kver" = "601" ] && [ "$_sub" -lt "79" ] ) || ( [ "$_kver" = "606" ] && [ "$_sub" -lt "18" ] ) || ( [ "$_kver" = "607" ] && [ "$_sub" -lt "6" ] ) || [[ "$_kver" =~ ^(517|518|519|600|602|603|604|605)$ ]]; then
+  if ( [ "$_kver" = "601" ] && [ "$_sub" -lt "79" ] ) || ( [ "$_kver" = "606" ] && [ "$_sub" -lt "18" ] ) || ( [ "$_kver" = "607" ] && [ "$_sub" -lt "6" ] ) || [[ "$_kver" =~ ^(517|518|519|600|602|603|604|605)$ ]]; then
     _patch_name="more-uarches-for-kernel-5.17-6.1.78"
   elif [[ "$_kver" =~ ^(601|606|607)$ ]]; then
     _patch_name="more-uarches-for-kernel-6.1.79-6.8-rc3"
@@ -777,13 +726,11 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
   tkgpatch="$srcdir/0002-mm-Support-soft-dirty-flag-read-with-reset.patch" && _tkg_patcher
 
   # prjc/bmq patch rev
-  if [ "$_kver" = "508" ] || [ "$_kver" = "507" ] || [ "$_kver" = "509" ] || [ "$_kver" = "511" ] || [ "$_kver" = "513" ] || [ "$_kver" = "514" ]; then
-    rev=3
-  elif [ "$_kver" = "510" ] || [ "$_kver" = "608" ]; then
+  if [ "$_kver" = "608" ]; then
     rev=5
-  elif [ "$_kver" = "512" ] || [ "$_kver" = "515" ] || [ "$_kver" = "516" ] || [ "$_kver" = "601" ] || [ "$_kver" = "603" ] || [ "$_kver" = "608" ]; then
+  elif [ "$_kver" = "601" ] || [ "$_kver" = "603" ] || [ "$_kver" = "608" ]; then
     rev=1
-  elif [ "$_kver" = "518" ] || [ "$_kver" = "602" ] || [ "$_kver" = "607" ] || [ "$_kver" = "610" ]; then
+  elif [ "$_kver" = "602" ] || [ "$_kver" = "607" ] || [ "$_kver" = "610" ]; then
     rev=2
   else
     rev=0
@@ -811,19 +758,11 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
 
     # PDS-mq
     _msg="Applying PDS base patch"
-    if [ "${_cpusched}" = "upds" ] || ( [ "$_kver" = "504" ] || [ "$_kver" = "507" ] && [ "${_cpusched}" = "pds" ] ); then
-      tkgpatch="$srcdir/0005-v${_basekernel}_undead-pds099o.patch" && _tkg_patcher
-      if [ "${_aggressive_ondemand}" = "true" ]; then
-        _msg="Applying PDS agressive ondemand governor patch"
-        tkgpatch="$srcdir/0005${doa}-glitched-ondemand-pds.patch" && _tkg_patcher
-      fi
-    else
-      tkgpatch="$srcdir/0009-prjc_v${_basekernel}-r${rev}.patch" && _tkg_patcher
+    tkgpatch="$srcdir/0009-prjc_v${_basekernel}-r${rev}.patch" && _tkg_patcher
       if [ "${_aggressive_ondemand}" = "true" ]; then
         _msg="Applying prjc PDS/BMQ agressive ondemand governor patch"
         tkgpatch="$srcdir/0009-glitched-ondemand-bmq.patch" && _tkg_patcher
       fi
-    fi
 
     _msg="Applying Glitched PDS patch"
     tkgpatch="$srcdir/0005${doa}-glitched-pds.patch" && _tkg_patcher
@@ -831,13 +770,9 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
   elif [ "${_cpusched}" = "bmq" ]; then
     # Project C / BMQ
     _msg="Applying Project C / BMQ base patch"
-    if [ "$_kver" != "504" ]; then
-      tkgpatch="$srcdir/0009-prjc_v${_basekernel}-r${rev}.patch" && _tkg_patcher
-    else
-      tkgpatch="$srcdir/0009-bmq_v5.4-r2.patch" && _tkg_patcher
-    fi
+    tkgpatch="$srcdir/0009-bmq_v5.4-r2.patch" && _tkg_patcher
 
-    if [ "${_aggressive_ondemand}" = "true" ] && [ "$_kver" != "504" ]; then
+    if [ "${_aggressive_ondemand}" = "true" ]; then
       _msg="Applying BMQ agressive ondemand governor patch"
       tkgpatch="$srcdir/0009-glitched-ondemand-bmq.patch" && _tkg_patcher
     fi
@@ -943,13 +878,6 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
   # Set some defaults
   _disable "DYNAMIC_FAULT" "DEFAULT_FQ_CODEL" "WERROR"
   _enable "DEFAULT_CAKE" "AMD_PRIVATE_COLOR"
-  if [ "$_kver" = "504" ]; then
-    _module "TP_SMAPI"
-    _enable "RAID6_USE_PREFER_GEN"
-  fi
-  if [ "$_kver" = "504" ] || [ "$_kver" = "509" ]; then
-    scripts/config --set-val "RCU_BOOST_DELAY" "0"
-  fi
   _disable "NTP_PPS" "ZSWAP_COMPRESSOR_DEFAULT_LZO" "PROFILE_ALL_BRANCHES"
   _enable "CRYPTO_LZ4" "CRYPTO_LZ4HC" "LZ4_COMPRESS" "LZ4HC_COMPRESS" "X86_AMD_PSTATE" "AMD_PINCTRL"
   _disable "DEBUG_FORCE_FUNCTION_ALIGN_64B" "X86_P6_NOP" "RCU_STRICT_GRACE_PERIOD"
@@ -997,7 +925,7 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
     fi
   fi
   # Clang LTO
-  if [ "$_compiler_name" = "-llvm" ] && [ $_kver -ge 512 ]; then
+  if [ "$_compiler_name" = "-llvm" ]; then
     if [ "$_lto_mode" = "full" ]; then
       _enable LTO_CLANG_FULL
       _disable LTO_CLANG_THIN
@@ -1029,12 +957,7 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
 
   if [ "$_compiler_name" = "-llvm" ]; then
     _disable "KCSAN" "KMSAN" "CFI_PERMISSIVE" "CFI_CLANG"
-
-    if [ "$_kver" != "504" ] && [ "$_kver" != "507" ] && [ "$_kver" != "508" ]; then
-      _disable "INIT_STACK_ALL_PATTERN"
-    else
-      _disable "INIT_STACK_ALL"
-    fi
+    _disable "INIT_STACK_ALL"
     _enable "INIT_ON_FREE_DEFAULT_ON" "INIT_STACK_ALL_ZERO"
     _disable "INIT_STACK_NONE"
   fi
@@ -1164,10 +1087,6 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
     _disable "FAIR_GROUP_SCHED"
     _disable "CFS_BANDWIDTH"
 
-    # for linux59 _sched_yield_type is set to 0
-    if [ "$_kver" = "509" ]; then
-      _sched_yield_type="0"
-    fi
     # sched yield type
     if ! [[ "$_sched_yield_type" =~ ^(0|1|2)$ ]]; then
       plain ""
@@ -1254,18 +1173,6 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
     fi
     msg2 "Using ${_rr_interval}ms round robin interval"
 
-    if [ "$_kver" != "504" ]; then
-      if [ "${_cpusched}" = "muqss" ]; then
-        sed -i -e "s/int rr_interval __read_mostly = 6;/int rr_interval __read_mostly = ${_rr_interval};/" ./kernel/sched/"${_sched}".c
-      elif [ "${_cpusched}" = "upds" ]; then
-        sed -i -e "s/#define SCHED_DEFAULT_RR (4)/#define SCHED_DEFAULT_RR (${_rr_interval})/" ./kernel/sched/pds.c
-      elif [ "${_cpusched}" = "bmq" ] || [ "${_cpusched}" = "pds" ]; then
-        sed -i -e "s/u64 sched_timeslice_ns __read_mostly = (4 * 1000 * 1000);/u64 sched_timeslice_ns __read_mostly = (${_rr_interval} * 1000 * 1000);/" ./kernel/sched/${_sched}.c
-      fi
-      if [ "${_cpusched}" = "bmq" ]; then
-        scripts/config --set-val "SCHED_TIMESLICE" "2"
-      fi
-    else
       if [ "${_cpusched}" == "muqss" ]; then
         sed -i -e "s/int rr_interval __read_mostly = 6;/int rr_interval __read_mostly = ${_rr_interval};/" ./kernel/sched/"${_sched}".c
       elif [ "${_cpusched}" == "pds" ]; then
@@ -1274,7 +1181,6 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
         scripts/config --set-val "SCHED_TIMESLICE" "${_rr_interval}"
       fi
     fi
-  fi
 
   # zenify
   if [ "$_zenify" = "false" ] || [ "$_glitched_base" = "false" ]; then
@@ -1285,11 +1191,7 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
 
   # compiler optimization level
   if [ "$_compileroptlevel" = "1" ]; then
-    if [ "$_kver" != "504" ]; then
-      _disable "CC_OPTIMIZE_FOR_PERFORMANCE_O3"
-    else
       _disable "CC_OPTIMIZE_HARDER"
-    fi
   elif [ "$_compileroptlevel" = "2" ]; then
     if [[ $_kver -ge 600 ]]; then
       tkgpatch="$srcdir/0013-optimize_harder_O3.patch"
@@ -1297,20 +1199,12 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
       _tkg_patcher
     else
       _disable "CC_OPTIMIZE_FOR_PERFORMANCE"
-      if [ "$_kver" != "504" ]; then
-        _enable "CC_OPTIMIZE_FOR_PERFORMANCE_O3"
-      else
-        _enable "CC_OPTIMIZE_HARDER"
-      fi
+      _enable "CC_OPTIMIZE_HARDER"
     fi
   elif [ "$_compileroptlevel" = "3" ]; then
     _disable "CC_OPTIMIZE_FOR_PERFORMANCE"
     _enable "CC_OPTIMIZE_FOR_SIZE"
-    if [ "$_kver" != "504" ]; then
-      _disable "CC_OPTIMIZE_FOR_PERFORMANCE_O3"
-    else
-      _disable "CC_OPTIMIZE_HARDER"
-    fi
+    _disable "CC_OPTIMIZE_HARDER"
   fi
 
   # irq threading
@@ -1701,7 +1595,7 @@ CONFIG_DEBUG_INFO_BTF_MODULES=y\r
     if [[ "$CONDITION12" =~ [yY] ]] || [ "$_waydroid" = "true" ]; then
       _enable "ANDROID" "ANDROID_BINDER_IPC" "ANDROID_BINDERFS"
       _disable "ANDROID_BINDER_IPC_SELFTEST"
-      scripts/config --set-str "ANDROID_BINDER_DEVICES" ""
+      scripts/config --set-str "ANDROID_BINDER_DEVICES" "binder,hwbinder,vndbinder" # These devices were missing from the original TKG script, added by ETJAKEOC.
       if [[ "$CONDITION12" =~ [yY] ]]; then
         read -rp "Press enter to continue..."
       fi
