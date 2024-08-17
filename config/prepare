@@ -443,7 +443,7 @@ _define_kernel_abs_paths() {
   if [ -z "$_kernel_work_folder_abs" ]; then
     _kernel_work_folder_abs="$_where/$_kernel_work_folder/linux-src-git"
     if [[ "$_kernel_work_folder" == /* ]]; then
-      _kernel_work_folder_abs="$_kernel_work_folder/linux-tkg/linux-src-git"
+      _kernel_work_folder_abs="$_kernel_work_folder/linux/linux-src-git"
     fi
     echo -e "_kernel_work_folder_abs=\"$_kernel_work_folder_abs\"" >> "$_where"/BIG_UGLY_FROGMINER
   fi
@@ -451,7 +451,7 @@ _define_kernel_abs_paths() {
   if [ -z "$_kernel_source_folder_abs" ]; then
     _kernel_source_folder_abs="$_where/$_kernel_source_folder/linux-kernel.git"
     if [[ "$_kernel_source_folder" == /* ]]; then
-      _kernel_source_folder_abs="$_kernel_source_folder/linux-tkg/linux-kernel.git"
+      _kernel_source_folder_abs="$_kernel_source_folder/linux/linux-kernel.git"
     fi
     echo -e "_kernel_source_folder_abs=\"$_kernel_source_folder_abs\"" >> "$_where"/BIG_UGLY_FROGMINER
   fi
@@ -513,14 +513,14 @@ _setup_kernel_work_folder() {
 _tkg_initscript() {
 
   if ! whereis git > /dev/null 2>&1; then
-    warning "the 'git' command is not installed. Please install it then re-run the install script of linux-tkg."
+    warning "the 'git' command is not installed. Please install it then re-run the install script."
     exit 1
   fi
 
   if ! git status > /dev/null 2>&1; then
-    warning "linux-tkg needs to be git cloned"
-    msg2 "please delete the current linux-tkg folder and re-created it with"
-    msg2 "git clone --depth=1 https://github.com/Frogging-Family/linux-tkg.git"
+    warning "TKT needs to be git cloned"
+    msg2 "please delete the current TKT folder and re-created it with"
+    msg2 "git clone --depth=1 https://github.com/ETJAKEOC/TKT.git"
     exit 1
   fi
 
@@ -560,8 +560,8 @@ _tkg_initscript() {
   # Select CPU scheduler
   _set_cpu_scheduler
 
-  cp "$_where"/linux-tkg-patches/${_basekernel}/* "$_where" # copy patches inside the PKGBUILD's dir to preserve makepkg sourcing and md5sum checking
-  cp "$_where"/linux-tkg-config/${_basekernel}/* "$_where" # copy config files and hooks inside the PKGBUILD's dir to preserve makepkg sourcing and md5sum checking
+  cp "$_where"/patches/${_basekernel}/* "$_where" # copy patches inside the PKGBUILD's dir to preserve makepkg sourcing and md5sum checking
+  cp "$_where"/config/${_basekernel}/* "$_where" # copy config files and hooks inside the PKGBUILD's dir to preserve makepkg sourcing and md5sum checking
 
   # Set compiler
   _set_compiler
@@ -577,15 +577,15 @@ user_patcher() {
     for _f in "$_where"/*."${_userpatch_ext}patch" "$_where"/*."${_userpatch_ext}revert"; do
       if [ -e "${_f}" ]; then
         warning "Found userpatch file ${f##*/} in the PKGBUILD directory." #"
-        warning "Userpatches must now be placed in version-specific subdirectories (linux${_basever}-tkg-userpatches for this kernel version)."
+        warning "Userpatches must now be placed in version-specific subdirectories (${_basever}-userpatches for this kernel version)."
         warning "The patch will not be applied."
       fi
     done
 
-    echo -e "linux-tkg user patches, if any:\n" >> "$_where"/logs/prepare.log.txt
+    echo -e "user patches, if any:\n" >> "$_where"/logs/prepare.log.txt
 
 	# To patch the user because all your base are belong to us
-	local _patches=("$_where"/linux"$_basever"-tkg-userpatches/*."${_userpatch_ext}revert")
+	local _patches=("$_where"/"$_basever"-userpatches/*."${_userpatch_ext}revert")
 	if [ ${#_patches[@]} -ge 2 ] || [ -e "${_patches}" ]; then
 	  if [ "$_user_patches_no_confirm" != "true" ]; then
 	    msg2 "Found ${#_patches[@]} 'to revert' userpatches for ${_userpatch_target}:"
@@ -607,7 +607,7 @@ user_patcher() {
 	  fi
 	fi
 
-	_patches=("$_where"/linux"$_basever"-tkg-userpatches/*."${_userpatch_ext}patch")
+	_patches=("$_where"/"$_basever"-userpatches/*."${_userpatch_ext}patch")
 	if [ ${#_patches[@]} -ge 2 ] || [ -e "${_patches}" ]; then
 	  if [ "$_user_patches_no_confirm" != "true" ]; then
 	    msg2 "Found ${#_patches[@]} userpatches for ${_userpatch_target}:"
@@ -654,14 +654,11 @@ _tkg_srcprep() {
 
   if [ "${_distro}" = "Arch" ]; then
     if [ -n "$_custom_pkgbase" ]; then
-      if [[ "$_custom_pkgbase" != *tkg* ]]; then
-        _localversion_tag="-tkg-"
-      fi
-      echo "-${pkgrel}${_localversion_tag}${_custom_pkgbase}" > localversion.10-pkgrel
-      echo -e "Version tail set to \"-${pkgrel}${_localversion_tag}${_custom_pkgbase}\"\n" > "$_where"/logs/prepare.log.txt
+echo "-${_custom_pkgbase}" > localversion.10-pkgrel
+      echo -e "Version tail set to \"-${_custom_pkgbase}\"\n" > "$_where"/logs/prepare.log.txt
     else
-      echo "-$pkgrel-tkg-${_cpusched}${_compiler_name}" > localversion.10-pkgrel
-      echo -e "Version tail set to \"-$pkgrel-tkg-${_cpusched}${_compiler_name}\"\n" > "$_where"/logs/prepare.log.txt
+      echo "-${_cpusched}${_compiler_name}" > localversion.10-pkgrel
+      echo -e "Version tail set to \"-${_cpusched}${_compiler_name}\"\n" > "$_where"/logs/prepare.log.txt
     fi
     echo "" > localversion.20-pkgname
   fi
@@ -943,7 +940,7 @@ _tkg_srcprep() {
 
   if [ -z $_debug ]; then
 
-  # Set some -tkg defaults
+  # Set some defaults
   _disable "DYNAMIC_FAULT" "DEFAULT_FQ_CODEL" "WERROR"
   _enable "DEFAULT_CAKE" "AMD_PRIVATE_COLOR"
   if [ "$_kver" = "504" ]; then
@@ -1167,7 +1164,7 @@ _tkg_srcprep() {
     _disable "FAIR_GROUP_SCHED"
     _disable "CFS_BANDWIDTH"
 
-    # for linux59-tkg _sched_yield_type is set to 0
+    # for linux59 _sched_yield_type is set to 0
     if [ "$_kver" = "509" ]; then
       _sched_yield_type="0"
     fi
@@ -1729,10 +1726,10 @@ CONFIG_DEBUG_INFO_BTF_MODULES=y\r
       cd "$_where/.." && git clone https://github.com/Frogging-Family/community-patches.git && cd "${_kernel_work_folder_abs}"
     fi
     _community_patches=($_community_patches)
-    mkdir -p "$_where"/linux"$_basever"-tkg-userpatches
+    mkdir -p "$_where"/"$_basever"-userpatches
     for _p in ${_community_patches[@]}; do
-      if [ ! -e "$_where/linux$_basever-tkg-userpatches/$_p" ]; then
-        ln -s "$_where"/../community-patches/linux"$_basever"-tkg/$_p "$_where"/linux"$_basever"-tkg-userpatches/$_p
+      if [ ! -e "$_where/$_basever-userpatches/$_p" ]; then
+        ln -s "$_where"/../community-patches/"$_basever"/$_p "$_where"/"$_basever"-userpatches/$_p
       else
         warning "Ignoring '$_p' community patch already present in the userpatches dir"
         _community_patches=(${_community_patches[@]/$_p})
@@ -1749,7 +1746,7 @@ CONFIG_DEBUG_INFO_BTF_MODULES=y\r
 
   # Community patches removal
   for _p in ${_community_patches[@]}; do
-    rm -f "$_where"/linux"$_basever"-tkg-userpatches/$_p
+    rm -f "$_where"/"$_basever"-userpatches/$_p
   done
 
   if [ "$_distro" = "Arch" ]; then
@@ -1920,7 +1917,7 @@ exit_cleanup() {
 
   # Community patches removal in case of failure
   for _p in ${_community_patches[@]}; do
-    rm -f "$_where"/linux"$_basever"-tkg-userpatches/"$_p"
+    rm -f "$_where"/"$_basever"-userpatches/"$_p"
   done
 
   if [ "$_NUKR" = "true" ] && [ "$_where" != "$srcdir" ]; then

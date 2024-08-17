@@ -2,27 +2,10 @@
 # Tobias Powalowski <tpowa@archlinux.org>
 # Thomas Baechler <thomas@archlinux.org>
 
-# Contributor: Tk-Glitch <ti3nou at gmail dot com>
-# Contributor: Hyper-KVM <hyperkvmx86 at gmail dot com>
+# Original Contributor: Tk-Glitch <ti3nou at gmail dot com>
+# Oroginal Contributor: Hyper-KVM <hyperkvmx86 at gmail dot com>
 
-plain '       .---.`               `.---.'
-plain '    `/syhhhyso-           -osyhhhys/`'
-plain '   .syNMdhNNhss/``.---.``/sshNNhdMNys.'
-plain '   +sdMh.`+MNsssssssssssssssNM+`.hMds+'
-plain '   :syNNdhNNhssssssssssssssshNNhdNNys:'
-plain '    /ssyhhhysssssssssssssssssyhhhyss/'
-plain '    .ossssssssssssssssssssssssssssso.'
-plain '   :sssssssssssssssssssssssssssssssss:'
-plain '  /sssssssssssssssssssssssssssssssssss/   Linux-tkg'
-plain ' :sssssssssssssoosssssssoosssssssssssss:        kernels'
-plain ' osssssssssssssoosssssssoossssssssssssso'
-plain ' osssssssssssyyyyhhhhhhhyyyyssssssssssso'
-plain ' /yyyyyyhhdmmmmNNNNNNNNNNNmmmmdhhyyyyyy/'
-plain '  smmmNNNNNNNNNNNNNNNNNNNNNNNNNNNNNmmms'
-plain '   /dNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNd/'
-plain '    `:sdNNNNNNNNNNNNNNNNNNNNNNNNNds:`'
-plain '       `-+shdNNNNNNNNNNNNNNNdhs+-`'
-plain '             `.-:///////:-.`'
+# Hijacked by: ETJAKEOC <etjakeoc@gmail.com>
 
 _where="$PWD" # track basedir as different Arch based distros are moving srcdir around
 _ispkgbuild="true"
@@ -38,12 +21,11 @@ if [ -e "$_EXT_CONFIG_PATH" ]; then
 fi
 
 source current_env
-
-source "$_where"/linux-tkg-config/prepare
+source "$_where"/config/prepare
 
 # Make sure we're in a clean state
 if [ ! -e "$_where"/BIG_UGLY_FROGMINER ]; then
-  _tkg_initscript
+  _tkt_initscript
 fi
 
 source "$_where"/BIG_UGLY_FROGMINER
@@ -51,23 +33,20 @@ source "$_where"/BIG_UGLY_FROGMINER
 if [ -n "$_custom_pkgbase" ]; then
   pkgbase="${_custom_pkgbase}"
 else
-  pkgbase=linux"${_basever}"-tkg-"${_cpusched}"${_compiler_name}
+  pkgbase=linux"${_basever}"-tkt-"${_cpusched}"${_compiler_name}
 fi
 pkgname=("${pkgbase}" "${pkgbase}-headers")
 pkgver="${_basekernel}"."${_sub}"
-pkgrel=273
-pkgdesc='Linux-tkg'
-arch=('x86_64') # no i686 in here
+pkgrel=1
+pkgdesc='A customized Linux kernel install script, forked from the TKG script, aimed at a more performant tune, at the risk of stability.'
+arch=('x86_64') # no i686 in here << Agreed xD
 url="https://www.kernel.org/"
 license=('GPL2')
 makedepends=('bison' 'xmlto' 'docbook-xsl' 'inetutils' 'bc' 'libelf' 'pahole' 'patchutils' 'flex' 'python-sphinx' 'python-sphinx_rtd_theme' 'graphviz' 'imagemagick' 'git' 'cpio' 'perl' 'tar' 'xz' 'wget')
-if [ "$_compiler_name" = "-llvm" ]; then
-  makedepends+=( 'lld' 'clang' 'llvm')
-fi
 optdepends=('schedtool')
-options=('!strip' 'docs')
+options=('!strip')
 
-for f in "$_where"/linux-tkg-config/"$_basekernel"/* "$_where"/linux-tkg-patches/"$_basekernel"/*; do
+for f in "$_where"/config/"$_basekernel"/* "$_where"/patches/"$_basekernel"/*; do
   source+=( "$f" )
   sha256sums+=( "SKIP" )
 done
@@ -88,7 +67,7 @@ prepare() {
 
   source "${_where}/current_env"
 
-  _tkg_srcprep
+  _tkt_srcprep
 }
 
 build() {
@@ -115,7 +94,7 @@ build() {
     msg2 'ccache was found and will be used'
   fi
 
-  # document the TkG variables, excluding "_", "_EXT_CONFIG_PATH", "_where", and "_path".
+  # document the tkt variables, excluding "_", "_EXT_CONFIG_PATH", "_where", and "_path".
   declare -p | cut -d ' ' -f 3 | grep -P '^_(?!=|EXT_CONFIG_PATH|where|path)' > "${srcdir}/customization-full.cfg"
 
   # remove -O2 flag and place user optimization flag
@@ -140,14 +119,14 @@ build() {
 }
 
 hackbase() {
-  pkgdesc="The $pkgdesc kernel and modules - https://github.com/Frogging-Family/linux-tkg"
+  pkgdesc="The $pkgdesc kernel and modules"
   depends=('coreutils' 'kmod' 'initramfs')
   optdepends=('linux-docs: Kernel hackers manual - HTML documentation that comes with the Linux kernel.'
               'crda: to set the correct wireless channels of your country.'
               'linux-firmware: Firmware files for Linux'
               'modprobed-db: Keeps track of EVERY kernel module that has ever been probed. Useful for make localmodconfig.'
-              'nvidia-tkg: NVIDIA drivers for all installed kernels - non-dkms version.'
-              'nvidia-dkms-tkg: NVIDIA drivers for all installed kernels - dkms version.'
+              'nvidia-tkt: NVIDIA drivers for all installed kernels - non-dkms version.'
+              'nvidia-dkms-tkt: NVIDIA drivers for all installed kernels - dkms version.'
               'update-grub: Simple wrapper around grub-mkconfig.')
   if [ -e "${srcdir}/ntsync.rules" ]; then
     provides=("linux=${pkgver}" "${pkgbase}" VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE NTSYNC-MODULE ntsync-header)
@@ -172,7 +151,7 @@ hackbase() {
   echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
   msg2 "Installing modules..."
-  ZSTD_CLEVEL=19 make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
+  ZSTD_CLEVEL=9 make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
     DEPMOD=/doesnt/exist modules_install  # Suppress depmod
 
   # remove build and source links
@@ -206,7 +185,7 @@ hackbase() {
 }
 
 hackheaders() {
-  pkgdesc="Headers and scripts for building modules for the $pkgdesc kernel - https://github.com/Frogging-Family/linux-tkg"
+  pkgdesc="Headers and scripts for building modules for the $pkgdesc kernel"
   provides=("linux-headers=${pkgver}" "${pkgbase}-headers=${pkgver}")
   case $_basever in
     54|57|58|59|510)
@@ -243,7 +222,6 @@ hackheaders() {
   cp -t "$builddir" -a include
   cp -t "$builddir/arch/x86" -a arch/x86/include
   install -Dt "$builddir/arch/x86/kernel" -m644 arch/x86/kernel/asm-offsets.s
-
   install -Dt "$builddir/drivers/md" -m644 drivers/md/*.h
   install -Dt "$builddir/net/mac80211" -m644 net/mac80211/*.h
 
