@@ -5,6 +5,7 @@
 # Original Contributor: Tk-Glitch <ti3nou at gmail dot com>
 # Oroginal Contributor: Hyper-KVM <hyperkvmx86 at gmail dot com>
 
+# All credits due to the previous pioneers of this script whom came before me. Thank you for your effort.
 # Hijacked by: ETJAKEOC <etjakeoc@gmail.com>
 
 _where="$PWD" # track basedir as different Arch based distros are moving srcdir around
@@ -81,7 +82,7 @@ build() {
   fi
 
   if [ "$_force_all_threads" = "true" ]; then
-    _force_all_threads="-j$((`nproc`+1))"
+    _force_all_threads="-j$((`nproc`))"
   else
     _force_all_threads="${MAKEFLAGS}"
   fi
@@ -125,8 +126,8 @@ hackbase() {
               'crda: to set the correct wireless channels of your country.'
               'linux-firmware: Firmware files for Linux'
               'modprobed-db: Keeps track of EVERY kernel module that has ever been probed. Useful for make localmodconfig.'
-              'nvidia-tkg: NVIDIA drivers for all installed kernels - non-dkms version.'
-              'nvidia-dkms-tkg: NVIDIA drivers for all installed kernels - dkms version.'
+              'nvidia-tkg: NVIDIA drivers for all installed kernels - non-dkms version. From TK-Glitch.'
+              'nvidia-dkms-tkg: NVIDIA drivers for all installed kernels - dkms version. From TK-Glitch.'
               'update-grub: Simple wrapper around grub-mkconfig.')
   if [ -e "${srcdir}/ntsync.rules" ]; then
     provides=("linux=${pkgver}" "${pkgbase}" VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE NTSYNC-MODULE ntsync-header)

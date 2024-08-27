@@ -8,6 +8,7 @@ _eol_kernels=("6.3" "6.2" "6.0")
 
 typeset -Ag _kernel_git_remotes
 _kernel_git_remotes=(
+  ["android-mainline"]="https://android.googlesource.com/kernel/common/+/android-mainline"
   ["kernel.org"]="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
   ["googlesource.com"]="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable"
   ["github.com"]="https://github.com/gregkh/linux.git"
@@ -24,7 +25,7 @@ fi
 if [[ -z "$_git_mirror" ]]; then
   _git_mirror="${_git_remote_names[2]}"
   if $( ! timeout 5 git ls-remote ${_kernel_git_remotes[$_git_mirror]} >/dev/null ) || [[ "$( git ls-remote ${_kernel_git_remotes[$_git_mirror]} | head -n 1 )" = *502* ]]; then
-    warning "kernel.org unreachable or too long to respond"
+    warning "Mirror unreachable or too long to respond"
     _git_mirror="${_git_remote_names[0]}"
   fi
   echo "Defaulting to ${_git_mirror} git mirror"
