@@ -17,7 +17,7 @@ index baf3ab8d9d49..854e32e6aec7 100755
  UTS_VERSION="#$VERSION"
 -CONFIG_FLAGS=""
 -if [ -n "$SMP" ] ; then CONFIG_FLAGS="SMP"; fi
-+CONFIG_FLAGS="TKG"
++CONFIG_FLAGS="TKT"
 +if [ -n "$SMP" ] ; then CONFIG_FLAGS="$CONFIG_FLAGS SMP"; fi
 
  if [ -n "$PREEMPT_RT" ] ; then
