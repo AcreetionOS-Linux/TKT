@@ -20,15 +20,15 @@ _git_remote_names=( "${!_kernel_git_remotes[@]}" )
 # Function to handle cloning for linux repositories
 clone_linux_kernel() {
     local repo_url="${_kernel_git_remotes[$_git_mirror]}"
-    echo "Cloning kernel repository from $repo_url..."
+    echo "Cloning linux kernel repository from $repo_url..."
     git clone --depth 1 "$repo_url" "$_kernel_work_folder_abs"
 }
 
 # Function to handle cloning for android-mainline
 clone_android_mainline() {
-    local repo_url="https://android.googlesource.com/kernel/common"
+    local repo_url="${_kernel_git_remotes[$_git_mirror]}"
     local branch="android-mainline"
-    echo "Cloning Android-mainline kernel repository..."
+    echo "Cloning Android-mainline kernel repository from $repo_url..."
     git clone -b "$branch" --depth 1 "$repo_url" "$_kernel_work_folder_abs"
 }
 
@@ -36,7 +36,7 @@ clone_android_mainline() {
 if [[ "$_git_mirror" == "android-mainline" ]]; then
     clone_android_mainline
 else
-    clone_other_kernel
+    clone_linux_kernel
 fi
 
 # Check if the selected mirror is recognized
