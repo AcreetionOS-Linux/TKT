@@ -22,7 +22,7 @@ if [ -e "$_EXT_CONFIG_PATH" ]; then
 fi
 
 source current_env
-source "$_where"/config/prepare
+source "$_where"/kconfigs/prepare
 
 # Make sure we're in a clean state
 if [ ! -e "$_where"/BIG_UGLY_FROGMINER ]; then
@@ -47,7 +47,7 @@ makedepends=('bison' 'xmlto' 'docbook-xsl' 'inetutils' 'bc' 'libelf' 'pahole' 'p
 optdepends=('schedtool')
 options=('!strip')
 
-for f in "$_where"/config/"$_basekernel"/* "$_where"/patches/"$_basekernel"/*; do
+for f in "$_where"/kconfigs/"$_basekernel"/* "$_where"/kpatches/"$_basekernel"/*; do
   source+=( "$f" )
   sha256sums+=( "SKIP" )
 done

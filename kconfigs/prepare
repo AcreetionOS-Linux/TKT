@@ -545,8 +545,8 @@ _tkg_initscript() {
   # Select CPU scheduler
   _set_cpu_scheduler
 
-  cp "$_where"/patches/${_basekernel}/* "$_where" # copy patches inside the PKGBUILD's dir to preserve makepkg sourcing and md5sum checking
-  cp "$_where"/config/${_basekernel}/* "$_where" # copy config files and hooks inside the PKGBUILD's dir to preserve makepkg sourcing and md5sum checking
+  cp "$_where"/kpatches/${_basekernel}/* "$_where" # copy patches inside the PKGBUILD's dir to preserve makepkg sourcing and md5sum checking
+  cp "$_where"/kconfigs/${_basekernel}/* "$_where" # copy config files and hooks inside the PKGBUILD's dir to preserve makepkg sourcing and md5sum checking
 
   # Set compiler
   _set_compiler
