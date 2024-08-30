@@ -17,11 +17,37 @@ _kernel_git_remotes=(
 
 _git_remote_names=( "${!_kernel_git_remotes[@]}" )
 
+# Function to handle cloning for android-mainline
+clone_android_mainline() {
+    local repo_url="https://android.googlesource.com/kernel/common"
+    local branch="android-mainline"
+    local repo_dir="linux-kernel.git"
+    echo "Cloning Android-mainline kernel repository..."
+    git clone -b "$branch" --depth 1 "$repo_url" "$repo_dir"
+}
+
+# Function to handle cloning for other repositories
+clone_other_kernel() {
+    local repo_url="${_kernel_git_remotes[$_git_mirror]}"
+    local repo_dir="linux-kernel.git"
+    echo "Cloning kernel repository from $repo_url..."
+    git clone --depth 1 "$repo_url" "$repo_dir"
+}
+
+# Determine which repository to clone based on user selection
+if [[ "$_git_mirror" == "android-mainline" ]]; then
+    clone_android_mainline
+else
+    clone_other_kernel
+fi
+
+# Check if the selected mirror is recognized
 if [[ ! "${_git_remote_names[@]}" =~ "$_git_mirror" ]]; then
   warning "git mirror '$_git_mirror' not recognized"
   _git_mirror=""
 fi
 
+# Ensure _git_mirror is set before version picking
 if [[ -z "$_git_mirror" ]]; then
   _git_mirror="${_git_remote_names[2]}"
   if $( ! timeout 5 git ls-remote ${_kernel_git_remotes[$_git_mirror]} >/dev/null ) || [[ "$( git ls-remote ${_kernel_git_remotes[$_git_mirror]} | head -n 1 )" = *502* ]]; then
@@ -31,7 +57,7 @@ if [[ -z "$_git_mirror" ]]; then
   echo "Defaulting to ${_git_mirror} git mirror"
 fi
 
-# Fillout the latest tags map/dictionary
+# Fill out the latest tags map/dictionary
 _kernel_tags=$(git -c 'versionsort.suffix=-' \
   ls-remote --exit-code --refs --sort='version:refname' --tags ${_kernel_git_remotes[$_git_mirror]} '*.*' \
   | cut --delimiter='/' --fields=3)
