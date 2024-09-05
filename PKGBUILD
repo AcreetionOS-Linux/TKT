@@ -44,6 +44,9 @@ arch=('x86_64') # no i686 in here << Agreed xD
 url="https://www.kernel.org/"
 license=('GPL2')
 makedepends=('bison' 'xmlto' 'docbook-xsl' 'inetutils' 'bc' 'libelf' 'pahole' 'patchutils' 'flex' 'python-sphinx' 'python-sphinx_rtd_theme' 'graphviz' 'imagemagick' 'git' 'cpio' 'perl' 'tar' 'xz' 'wget')
+if [ "$_compiler_name" = "-llvm" ]; then
+  makedepends+=( 'lld' 'clang' 'llvm')
+fi
 optdepends=('schedtool')
 options=('!strip')
 
