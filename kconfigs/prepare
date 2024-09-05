@@ -12,7 +12,7 @@ _kernel_git_remotes=(
   ["googlesource.com"]="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable"
   ["github.com"]="https://github.com/gregkh/linux.git"
   ["torvalds"]="https://github.com/torvalds/linux.git"
-  ["android-mainline"]="https://android.googlesource.com/kernel/common"
+#  ["android-mainline"]="https://android.googlesource.com/kernel/common"
 )
 
 _git_remote_names=( "${!_kernel_git_remotes[@]}" )
@@ -25,19 +25,19 @@ clone_linux_kernel() {
 }
 
 # Function to handle cloning for android-mainline
-clone_android_mainline() {
-    local repo_url="${_kernel_git_remotes[$_git_mirror]}"
-    local branch="android-mainline"
-    echo "Cloning Android-mainline kernel repository from $repo_url..."
-    git clone -b "$branch" --depth 1 "$repo_url" "$_kernel_work_folder_abs"
-}
+#clone_android_mainline() {
+#    local repo_url="${_kernel_git_remotes[$_git_mirror]}"
+#    local branch="android-mainline"
+#    echo "Cloning Android-mainline kernel repository from $repo_url..."
+#    git clone -b "$branch" --depth 1 "$repo_url" "$_kernel_work_folder_abs"
+#}
 
 # Determine which repository to clone based on user selection
-if [[ "$_git_mirror" == "android-mainline" ]]; then
-    clone_android_mainline
-else
-    clone_linux_kernel
-fi
+#if [[ "$_git_mirror" == "android-mainline" ]]; then
+#    clone_android_mainline
+#else
+#    clone_linux_kernel
+#fi
 
 # Check if the selected mirror is recognized
 if [[ ! "${_git_remote_names[@]}" =~ "$_git_mirror" ]]; then
@@ -62,24 +62,24 @@ _kernel_tags=$(git -c 'versionsort.suffix=-' \
 
 typeset -Ag _kver_latest_tags_map
 
-if [[ "$_git_mirror" == "android-mainline" ]]; then
+#if [[ "$_git_mirror" == "android-mainline" ]]; then
   # Handle android-mainline tag parsing
-  for tag in $(git tag -l); do
+#  for tag in $(git tag -l); do
     # Extract versions from android-mainline tags
-    if [[ "$tag" =~ android15-([0-9]+\.[0-9]+) ]]; then
-      version="${BASH_REMATCH[1]}"
-      _kver_latest_tags_map["$version"]="$tag"
-    elif [[ "$tag" =~ experimental-([0-9]+) ]]; then
-      version="${BASH_REMATCH[1]}"
-      _kver_latest_tags_map["$version"]="$tag"
-    fi
-  done
-else
+#    if [[ "$tag" =~ android15-([0-9]+\.[0-9]+) ]]; then
+#      version="${BASH_REMATCH[1]}"
+#      _kver_latest_tags_map["$version"]="$tag"
+#    elif [[ "$tag" =~ experimental-([0-9]+) ]]; then
+#      version="${BASH_REMATCH[1]}"
+#      _kver_latest_tags_map["$version"]="$tag"
+#    fi
+#  done
+#else
   # Standard version detection for other mirrors
   for _key in "${_current_kernels[@]}" "${_eol_kernels[@]}"; do
     _kver_latest_tags_map[$_key]=$(echo "$_kernel_tags" | grep -F "v$_key" | grep -v "v$_key"[0-9] | tail -1 | cut -c1-)
   done
-fi
+#fi
 
 # PREEMPT_RT's supported kernel subversion
 typeset -Ag _rt_subver_map
