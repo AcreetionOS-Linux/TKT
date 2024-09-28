@@ -295,7 +295,7 @@ _set_cpu_scheduler() {
   elif [ "$_kver" = "610" ]; then
     _avail_cpu_scheds=("eevdf" "bore" "pds" "bmq")
   elif [ "$_kver" = "611" ]; then
-    _avail_cpu_scheds=("eevdf" "bore")
+    _avail_cpu_scheds=("eevdf" "bore" "pds" "bmq")
   else
     _avail_cpu_scheds=("$_default_cpu_sched")
   fi
@@ -638,16 +638,22 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
 
   if ( [ "$_kver" = "601" ] && [ "$_sub" -lt "79" ] ) || ( [ "$_kver" = "606" ] && [ "$_sub" -lt "18" ] ) || ( [ "$_kver" = "607" ] && [ "$_sub" -lt "6" ] ) || [[ "$_kver" =~ ^(517|518|519|600|602|603|604|605)$ ]]; then
     _patch_name="more-uarches-for-kernel-5.17-6.1.78"
+    _patch_name="more-ISA-levels-and-uarches-for-kernel-5.17-6.1.78"
   elif [[ "$_kver" =~ ^(601|606|607)$ ]]; then
     _patch_name="more-uarches-for-kernel-6.1.79-6.8-rc3"
+    _patch_name="more-ISA-levels-and-uarches-for-kernel-6.1.79-6.8-rc3"
   else
     _patch_name="more-uarches-for-kernel-6.8-rc4%2B"
+    _patch_name="more-ISA-levels-and-uarches-for-kernel-6.8-rc4+"
   fi
 
   curl "https://raw.githubusercontent.com/graysky2/kernel_compiler_patch/master/${_outdated}${_patch_name}.patch" > "$srcdir"/"${_patch_name}".patch || true
   tkgpatch="${_patch_location}/${_patch_name}.patch"
   if [ -e "$tkgpatch" ]; then
     _msg="Applying graysky's cpu opts patch" && _tkg_patcher
+    if grep -wq "MINTEL_CPU_V4" "$tkgpatch"; then
+      _graysky_legacy="false"
+    fi
   else
     msg2 "Couldn't find graysky's cpu opts patch for this version"
   fi
@@ -968,7 +974,13 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
   fi
 
   # cpu opt
-  _cpu_marchs=("native_amd" "native_intel" "generic_cpu" "generic_cpu2" "generic_cpu3" "generic_cpu4")
+  _cpu_marchs=("generic_cpu")
+  if [ "$_graysky_legacy" = "false" ]; then
+    _cpu_marchs+=("amd_cpu_v2" "amd_cpu_v3" "amd_cpu_v4" "intel_cpu_v2" "intel_cpu_v3" "intel_cpu_v4")
+  else
+    _cpu_marchs+=("generic_cpu2" "generic_cpu3" "generic_cpu4")
+  fi
+  _cpu_marchs+=("native_amd" "native_intel")
   _cpu_marchs+=("k8" "k8sse3" "k10" "barcelona" "bobcat" "jaguar" "bulldozer" "piledriver")
   _cpu_marchs+=("steamroller" "excavator" "zen" "zen2" "zen3" "zen4" "mpsc" "atom" "core2" "nehalem" "westmere")
   _cpu_marchs+=("bonnell" "silvermont" "sandybridge" "ivybridge" "haswell" "broadwell" "skylake")
@@ -995,7 +1007,7 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
 
   if [ -z "$_processor_opt" ]; then
     msg2 "Please select the desired CPU micro-architecture"
-    _default_index="2"
+    _default_index="0"
     _prompt_from_array "${_cpu_marchs[@]}"
     _processor_opt="${_selected_value}"
   fi
@@ -1018,6 +1030,26 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
     fi
   done
 
+  # x86_64 Compiler ISA level
+  if [ "$_processor_opt" = "generic_cpu" ]; then
+    if [[ -z "$_x86_64_isalvl" || ! "$_x86_64_isalvl" =~ ^(1|2|3)$ ]]; then
+      plain "Please select the desired x86_64 compiler ISA level"
+      plain "You can find the best version for your CPU by running one of the following:"
+      msg2 "/lib/ld-linux-x86-64.so.2 --help | grep supported"
+      msg2 "/lib64/ld-linux-x86-64.so.2 --help | grep supported"
+      _x86_64_isalvl_array_text=(
+        "x86-64-v1"
+        "x86-64-v2"
+        "x86-64-v3"
+      )
+      _default_index="0"
+      _prompt_from_array "${_x86_64_isalvl_array_text[@]}"
+      _x86_64_isalvl="$((_selected_index+1))"
+    fi
+    if [[ "$_x86_64_isalvl" =~ ^(1|2|3)$ ]]; then
+      scripts/config --set-val "X86_64_VERSION" "$_x86_64_isalvl"
+    fi
+  fi
 
   # Disable some debugging
   if [ "${_debugdisable}" = "true" ]; then
