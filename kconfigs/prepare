@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # List of kernels that are maintained upstream
-_current_kernels=("6.11" "6.10" "6.9" "6.8" "6.7" "6.6" "6.5" "6.4" "6.1")
+_current_kernels=("6.12" "6.11" "6.10" "6.6" "6.1")
 
 # List of kernels that are no longer maintained either upstream or locally
-_eol_kernels=("6.3" "6.2" "6.0")
+_eol_kernels=("6.9" "6.8" "6.7" "6.5" "6.4" "6.3" "6.2" "6.0")
 
 typeset -Ag _kernel_git_remotes
 _kernel_git_remotes=(
@@ -714,6 +714,12 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
     _msg="Import Suse-specific patches" && _tkg_patcher
   fi
 
+  if [ "$_distro" = "Gentoo" ]; then
+    # https://dev.gentoo.org/~mpagano/genpatches/trunk/
+    tkgpatch="$srcdir/0013-gentoo-kconfig.patch"
+    _msg="Import Gentoo-kconfig patches" && _tkg_patcher
+  fi
+
   if [ -z $_misc_adds ]; then
     plain "Enable misc additions ? They may contain temporary fixes pending upstream, or some other changes that can break on non-Arch distros."
     read -rp "`echo $'    > [Y]/n : '`" _interactive_misc_adds;
@@ -945,6 +951,12 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
       _disable LTO_CLANG_THIN
       _enable LTO_NONE
     fi
+  fi
+
+  if [ "$_distro" = "Gentoo" ]; then
+    # Default config for Gentoo as defined in kconfig
+    _enable "GENTOO_LINUX" "GENTOO_LINUX_UDEV" "GENTOO_LINUX_PORTAGE" "GENTOO_LINUX_INIT_SCRIPT" "GENTOO_PRINT_FIRMWARE_INFO" "GENTOO_LINUX_INIT_SYSTEMD"
+    _disable "GENTOO_KERNEL_SELF_PROTECTION"
   fi
 
   # Prevent Debian and Ubuntu to sign stuff because it breaks stuff
