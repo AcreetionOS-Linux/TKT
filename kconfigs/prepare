@@ -740,7 +740,7 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
   # prjc/bmq patch rev
   if [ "$_kver" = "608" ]; then
     rev=5
-  elif [ "$_kver" = "601" ] || [ "$_kver" = "603" ] || [ "$_kver" = "608" ]; then
+  elif [ "$_kver" = "601" ] || [ "$_kver" = "603" ] || [ "$_kver" = "608" ] || [ "$_kver" = "611" ]; then
     rev=1
   elif [ "$_kver" = "602" ] || [ "$_kver" = "607" ] || [ "$_kver" = "610" ]; then
     rev=2
