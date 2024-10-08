@@ -61,7 +61,7 @@ if [[ "$_logging_use_script" =~ ^(Y|y|Yes|yes)$ && -z "$SCRIPT" ]]; then
   exit
 fi
 
-source config/prepare
+source kconfigs/prepare
 
 ####################################################################
 
