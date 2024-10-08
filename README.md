@@ -4,6 +4,14 @@
 
 This repository provides scripts to automatically download, patch and compile the Linux Kernel from [the official Linux git repository](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git), with a selection of patches aiming for better desktop/gaming experience. The provided patches can be enabled/disabled by editing the `customization.cfg` file and/or by following the interactive install script. You can use an external config file (default is `$HOME/.config/TKT.cfg`, tweakable with the `_EXT_CONFIG_PATH` variable in `customization.cfg`). You can also use your own patches (more information in `customization.cfg` file).
 
+#### Tested distro's so far;
+```
+ -------------------------------
+| Arch Linux	=	Working |
+| Gentoo	=	Working |
+ -------------------------------
+```
+
 ### Important information
 
 - **Non-pacman distros support can be considered experimental. You're invited to report issues you might encounter with it.**
