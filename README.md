@@ -1,4 +1,4 @@
-## TKT - A TKG fork
+## TꓘT - A TKG fork
 
 - Please checkout the [CONTRIBUTIONS_GUIDELINE.MD](https://github.com/ETJAKEOC/TKT/blob/Alpha/CONTRIBUTION_GUIDELINE.md) file for information about collaboration.
 
