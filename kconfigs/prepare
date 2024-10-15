@@ -1124,6 +1124,7 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
     _disable "SCHED_PDS"
   elif [[ "${_cpusched}" =~ "bore" ]]; then
     _enable "SCHED_BORE"
+    scripts/config --set-val "MIN_BASE_SLICE_NS" "$_bore_min_base_slice_ns"
   fi
 
   if [[ "${_cpusched}" =~ ^(muqss|pds|bmq|upds)$ ]]; then
