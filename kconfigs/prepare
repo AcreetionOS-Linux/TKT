@@ -855,9 +855,14 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
 
   fi
 
-   if [[ "$_kver" == "612" ]]; then
-    _msg="Applying ETJAKEOC's patches"
-    tkgpatch="$srcdir/*ETJAKEOC*.patch" && _tkg_patcher
+  if [ "$_kver" = "612" ]; then
+  _msg="Applying ETJAKEOC super patch"
+  tkgpatch="$srcdir/ETJAKEOC-super-patch.patch" && _tkg_patcher
+  elif
+  _msg="Applying ETJAKEOC's Memory patch"
+  tkgpatch="$srcdir/0015-ETJAKEOC-Memory.patch" && _tkg_patcher
+  _msg="Applying ETJAKEOC's CPU patch"
+  tkgpatch="$srcdir/0016-ETJAKEOC-CPU-release.patch" && _tkg_patcher
   fi
 
   if [ -z "${_configfile}" ]; then
@@ -1653,15 +1658,10 @@ CONFIG_DEBUG_INFO_BTF_MODULES=y\r
   fi
 
   # NR_CPUS
-  if [ "$_basever" != "601" ]; then
-    if [ -n "$_NR_CPUS_value" ]; then
-      scripts/config --set-val "NR_CPUS" "$_NR_CPUS_value"
-      _enable "FORCE_NR_CPUS"
-    fi
-  else
-    warning "NR_CPUS is bugged on 6.1.y, so your setting was ignored"
+  if [ -n "$_NR_CPUS_value" ]; then
+    scripts/config --set-val "NR_CPUS" "$_NR_CPUS_value"
+    _enable "FORCE_NR_CPUS"
   fi
-
   fi
 
   # Community patches
@@ -1724,9 +1724,6 @@ CONFIG_DEBUG_INFO_BTF_MODULES=y\r
       msg2 "modprobed-db database not found"
       exit 1
     fi
-    # Workaround for: https://github.com/Tk-Glitch/PKGBUILDS/issues/404.
-    # Long live #404!
-    # The page doesn't exist any longer haha
     _disable "GPIO_BT8XX" "SND_SE6X" "SENSORS_ADM1021" "SENSORS_MAX6642" "SENSORS_ASUS_WMI_EC"
 
     make LSMOD=$_modprobeddb_db_path localmodconfig ${llvm_opt}

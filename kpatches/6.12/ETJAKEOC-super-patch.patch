@@ -1,0 +1,1298 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 12 May 2020 21:27:01 +0200
+Subject: [PATCH] {PRINTF} mm/backing-dev: silence -Wformat-security using "%s"
+
+---
+ mm/backing-dev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 3ffc3cfa7a14..755eb64d9357 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -1006,7 +1006,7 @@ int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
+ 		return 0;
+ 
+ 	vsnprintf(bdi->dev_name, sizeof(bdi->dev_name), fmt, args);
+-	dev = device_create(&bdi_class, NULL, MKDEV(0, 0), bdi, bdi->dev_name);
++	dev = device_create(&bdi_class, NULL, MKDEV(0, 0), bdi, "%s", bdi->dev_name);
+ 	if (IS_ERR(dev))
+ 		return PTR_ERR(dev);
+ 
+-- 
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 15 Aug 2020 12:30:46 +0200
+Subject: [PATCH] {PRINTF} mm/cma: silence -Wformat-security
+
+---
+ mm/cma.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/cma.c b/mm/cma.c
+index a4cfe995e11e..7b5f9654341c 100644
+--- a/mm/cma.c
++++ b/mm/cma.c
+@@ -202,7 +202,7 @@ int __init cma_init_reserved_mem(phys_addr_t base, phys_addr_t size,
+ 	cma = &cma_areas[cma_area_count];
+ 
+ 	if (name)
+-		snprintf(cma->name, CMA_MAX_NAME, name);
++		snprintf(cma->name, CMA_MAX_NAME, "%s", name);
+ 	else
+ 		snprintf(cma->name, CMA_MAX_NAME,  "cma%d\n", cma_area_count);
+ 
+-- 
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 5 Feb 2023 17:27:21 +0100
+Subject: [PATCH] {PRINTF} mm/damon/sysfs-schemes: silence -Wformat-security
+ with %s
+
+---
+ mm/damon/sysfs-schemes.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/damon/sysfs-schemes.c b/mm/damon/sysfs-schemes.c
+index 50cf89dcd898..78a41f6fdba6 100644
+--- a/mm/damon/sysfs-schemes.c
++++ b/mm/damon/sysfs-schemes.c
+@@ -960,7 +960,7 @@ static int damon_sysfs_access_pattern_add_range_dir(
+ 	if (!range)
+ 		return -ENOMEM;
+ 	err = kobject_init_and_add(&range->kobj, &damon_sysfs_ul_range_ktype,
+-			&access_pattern->kobj, name);
++			&access_pattern->kobj, "%s", name);
+ 	if (err)
+ 		kobject_put(&range->kobj);
+ 	else
+-- 
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 27 Dec 2020 21:50:18 +0100
+Subject: [PATCH] {For LLVMLinux} mm/remap: replace BUILD_BUG with BUG for
+ clang
+
+clang on x86_64 fails to link because:
+
+    ld: mm/mremap.o: in function `get_extent':
+    mremap.c:(.text+0xab9): undefined reference to `__compiletime_assert_1280'
+
+get_extent() is not constant-inlined enough, when using clang.
+---
+ mm/mremap.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/mremap.c b/mm/mremap.c
+index 11e06e4ab33b..df97e8f4ae23 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -429,7 +429,7 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
+ 		size = PUD_SIZE;
+ 		break;
+ 	default:
+-		BUILD_BUG();
++		BUG();/* BUILD_BUG();  clang does not optimize enough */
+ 		break;
+ 	}
+ 
+-- 
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 2 Jul 2021 21:06:06 +0200
+Subject: [PATCH] {PRINTF} mm/slub: constify the format arg of slab_fix
+
+---
+ mm/slub.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 93098fa9bf8d..7a4bb2bcfd60 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -918,7 +918,7 @@ static void slab_bug(struct kmem_cache *s, char *fmt, ...)
+ }
+ 
+ __printf(2, 3)
+-static void slab_fix(struct kmem_cache *s, char *fmt, ...)
++static void slab_fix(struct kmem_cache *s, const char *fmt, ...)
+ {
+ 	struct va_format vaf;
+ 	va_list args;
+@@ -1048,7 +1048,7 @@ static void init_object(struct kmem_cache *s, void *object, u8 val)
+ static void restore_bytes(struct kmem_cache *s, char *message, u8 data,
+ 						void *from, void *to)
+ {
+-	slab_fix(s, "Restoring %s 0x%p-0x%p=0x%x", message, from, to - 1, data);
++	slab_fix(s, "Restoring %s 0x %p-0x %p=0x%x", message, from, to - 1, data);
+ 	memset(from, data, to - from);
+ }
+ 
+-- 
+
+Signed-off-by: Colin Ian King <colin.king@intel.com>
+---
+ drivers/acpi/osl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 70af3fbbebe5..dab3d5089635 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -1549,7 +1549,7 @@ void acpi_os_release_lock(acpi_spinlock lockp, acpi_cpu_flags not_used)
+ acpi_status
+ acpi_os_create_cache(char *name, u16 size, u16 depth, acpi_cache_t **cache)
+ {
+-	*cache = kmem_cache_create(name, size, 0, 0, NULL);
++	*cache = kmem_cache_create(name, size, 0, SLAB_HWCACHE_ALIGN, NULL);
+ 	if (*cache == NULL)
+ 		return AE_ERROR;
+ 	else
+-- 
+diff --git a/tools/testing/selftests/bpf/Makefile b/tools/testing/selftests/bpf/Makefile
+index 4eceb491a8ae..6a7aeae7e206 100644
+--- a/tools/testing/selftests/bpf/Makefile
++++ b/tools/testing/selftests/bpf/Makefile
+@@ -37,7 +37,7 @@ CFLAGS += -g $(OPT_FLAGS) -rdynamic					\
+ 	  -Wall -Werror -fno-omit-frame-pointer				\
+ 	  $(GENFLAGS) $(SAN_CFLAGS) $(LIBELF_CFLAGS)			\
+ 	  -I$(CURDIR) -I$(INCLUDE_DIR) -I$(GENDIR) -I$(LIBDIR)		\
+-	  -I$(TOOLSINCDIR) -I$(APIDIR) -I$(OUTPUT)
++	  -I$(TOOLSINCDIR) $(KHDR_INCLUDES) -I$(OUTPUT)
+ LDFLAGS += $(SAN_LDFLAGS)
+ LDLIBS += $(LIBELF_LIBS) -lz -lrt -lpthread
+ 
+diff --git a/tools/testing/selftests/bpf/prog_tests/assign_reuse.c b/tools/testing/selftests/bpf/prog_tests/assign_reuse.c
+index 989ee4d9785b..3d06bf5a1ba4 100644
+--- a/tools/testing/selftests/bpf/prog_tests/assign_reuse.c
++++ b/tools/testing/selftests/bpf/prog_tests/assign_reuse.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright (c) 2023 Isovalent */
+-#include <uapi/linux/if_link.h>
++#include <linux/if_link.h>
+ #include <test_progs.h>
+ 
+ #include <netinet/tcp.h>
+diff --git a/tools/testing/selftests/bpf/prog_tests/tc_links.c b/tools/testing/selftests/bpf/prog_tests/tc_links.c
+index 1af9ec1149aa..532e162185c3 100644
+--- a/tools/testing/selftests/bpf/prog_tests/tc_links.c
++++ b/tools/testing/selftests/bpf/prog_tests/tc_links.c
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright (c) 2023 Isovalent */
+-#include <uapi/linux/if_link.h>
+-#include <uapi/linux/pkt_sched.h>
++#include <linux/if_link.h>
++#include <linux/pkt_sched.h>
+ #include <net/if.h>
+ #include <test_progs.h>
+ 
+diff --git a/tools/testing/selftests/bpf/prog_tests/tc_netkit.c b/tools/testing/selftests/bpf/prog_tests/tc_netkit.c
+index b9135720024c..1c8b8f03e873 100644
+--- a/tools/testing/selftests/bpf/prog_tests/tc_netkit.c
++++ b/tools/testing/selftests/bpf/prog_tests/tc_netkit.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright (c) 2023 Isovalent */
+-#include <uapi/linux/if_link.h>
++#include <linux/if_link.h>
+ #include <net/if.h>
+ #include <test_progs.h>
+ 
+diff --git a/tools/testing/selftests/bpf/prog_tests/tc_opts.c b/tools/testing/selftests/bpf/prog_tests/tc_opts.c
+index 196abf223465..14aee536c519 100644
+--- a/tools/testing/selftests/bpf/prog_tests/tc_opts.c
++++ b/tools/testing/selftests/bpf/prog_tests/tc_opts.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright (c) 2023 Isovalent */
+-#include <uapi/linux/if_link.h>
++#include <linux/if_link.h>
+ #include <net/if.h>
+ #include <test_progs.h>
+ 
+diff --git a/tools/testing/selftests/bpf/prog_tests/user_ringbuf.c b/tools/testing/selftests/bpf/prog_tests/user_ringbuf.c
+index dfff6feac12c..a37dda1b3cd2 100644
+--- a/tools/testing/selftests/bpf/prog_tests/user_ringbuf.c
++++ b/tools/testing/selftests/bpf/prog_tests/user_ringbuf.c
+@@ -12,7 +12,7 @@
+ #include <sys/syscall.h>
+ #include <sys/sysinfo.h>
+ #include <test_progs.h>
+-#include <uapi/linux/bpf.h>
++#include <linux/bpf.h>
+ #include <unistd.h>
+ 
+ #include "user_ringbuf_fail.skel.h"
+diff --git a/tools/testing/selftests/bpf/prog_tests/xdp_bonding.c b/tools/testing/selftests/bpf/prog_tests/xdp_bonding.c
+index 6d8b54124cb3..ee9bd8606d14 100644
+--- a/tools/testing/selftests/bpf/prog_tests/xdp_bonding.c
++++ b/tools/testing/selftests/bpf/prog_tests/xdp_bonding.c
+@@ -18,7 +18,7 @@
+ #include <linux/if_bonding.h>
+ #include <linux/limits.h>
+ #include <linux/udp.h>
+-#include <uapi/linux/netdev.h>
++#include <linux/netdev.h>
+ 
+ #include "xdp_dummy.skel.h"
+ #include "xdp_redirect_multi_kern.skel.h"
+diff --git a/tools/testing/selftests/bpf/prog_tests/xdp_cpumap_attach.c b/tools/testing/selftests/bpf/prog_tests/xdp_cpumap_attach.c
+index 481626a875d1..e63a193e29e8 100644
+--- a/tools/testing/selftests/bpf/prog_tests/xdp_cpumap_attach.c
++++ b/tools/testing/selftests/bpf/prog_tests/xdp_cpumap_attach.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-#include <uapi/linux/bpf.h>
++#include <linux/bpf.h>
+ #include <linux/if_link.h>
+ #include <test_progs.h>
+ 
+diff --git a/tools/testing/selftests/bpf/prog_tests/xdp_do_redirect.c b/tools/testing/selftests/bpf/prog_tests/xdp_do_redirect.c
+index bad0ea167be7..c40a25837233 100644
+--- a/tools/testing/selftests/bpf/prog_tests/xdp_do_redirect.c
++++ b/tools/testing/selftests/bpf/prog_tests/xdp_do_redirect.c
+@@ -9,7 +9,7 @@
+ #include <linux/in6.h>
+ #include <linux/udp.h>
+ #include <bpf/bpf_endian.h>
+-#include <uapi/linux/netdev.h>
++#include <linux/netdev.h>
+ #include "test_xdp_do_redirect.skel.h"
+ 
+ struct udp_packet {
+diff --git a/tools/testing/selftests/bpf/prog_tests/xdp_link.c b/tools/testing/selftests/bpf/prog_tests/xdp_link.c
+index e7e9f3c22edf..ab92c395a7c7 100644
+--- a/tools/testing/selftests/bpf/prog_tests/xdp_link.c
++++ b/tools/testing/selftests/bpf/prog_tests/xdp_link.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright (c) 2020 Facebook */
+-#include <uapi/linux/if_link.h>
++#include <linux/if_link.h>
+ #include <test_progs.h>
+ #include "test_xdp_link.skel.h"
+ 
+diff --git a/tools/testing/selftests/bpf/xdp_features.c b/tools/testing/selftests/bpf/xdp_features.c
+index 595c79141cf3..99b54674d94e 100644
+--- a/tools/testing/selftests/bpf/xdp_features.c
++++ b/tools/testing/selftests/bpf/xdp_features.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+-#include <uapi/linux/bpf.h>
+-#include <uapi/linux/netdev.h>
++#include <linux/bpf.h>
++#include <linux/netdev.h>
+ #include <linux/if_link.h>
+ #include <signal.h>
+ #include <argp.h>
+-- 
+2.45.2
+diff --git a/include/linux/io_uring_types.h b/include/linux/io_uring_types.h
+index 3315005df117..35ac4a8bf6ab 100644
+--- a/include/linux/io_uring_types.h
++++ b/include/linux/io_uring_types.h
+@@ -422,6 +422,8 @@ struct io_ring_ctx {
+ 	unsigned short			n_sqe_pages;
+ 	struct page			**ring_pages;
+ 	struct page			**sqe_pages;
++	/* for io_uring hybrid poll*/
++	u64			available_time;
+ };
+ 
+ struct io_tw_state {
+@@ -657,6 +659,10 @@ struct io_kiocb {
+ 		u64			extra1;
+ 		u64			extra2;
+ 	} big_cqe;
++    /* for io_uring hybrid iopoll */
++	bool		poll_state;
++	u64			iopoll_start;
++	u64			iopoll_end;
+ };
+ 
+ struct io_overflow_cqe {
+diff --git a/include/uapi/linux/io_uring.h b/include/uapi/linux/io_uring.h
+index 2aaf7ee256ac..42ae868651b0 100644
+--- a/include/uapi/linux/io_uring.h
++++ b/include/uapi/linux/io_uring.h
+@@ -199,6 +199,7 @@ enum io_uring_sqe_flags_bit {
+  * Removes indirection through the SQ index array.
+  */
+ #define IORING_SETUP_NO_SQARRAY		(1U << 16)
++#define IORING_SETUP_HY_POLL	(1U << 17)
+ 
+ enum io_uring_op {
+ 	IORING_OP_NOP,
+diff --git a/io_uring/io_uring.c b/io_uring/io_uring.c
+index 3942db160f18..bb3dfd749572 100644
+--- a/io_uring/io_uring.c
++++ b/io_uring/io_uring.c
+@@ -301,6 +301,7 @@ static __cold struct io_ring_ctx *io_ring_ctx_alloc(struct io_uring_params *p)
+ 		goto err;
+ 
+ 	ctx->flags = p->flags;
++	ctx->available_time = LLONG_MAX;
+ 	atomic_set(&ctx->cq_wait_nr, IO_CQ_WAKE_INIT);
+ 	init_waitqueue_head(&ctx->sqo_sq_wait);
+ 	INIT_LIST_HEAD(&ctx->sqd_list);
+@@ -3603,7 +3604,7 @@ static long io_uring_setup(u32 entries, struct io_uring_params __user *params)
+ 			IORING_SETUP_SQE128 | IORING_SETUP_CQE32 |
+ 			IORING_SETUP_SINGLE_ISSUER | IORING_SETUP_DEFER_TASKRUN |
+ 			IORING_SETUP_NO_MMAP | IORING_SETUP_REGISTERED_FD_ONLY |
+-			IORING_SETUP_NO_SQARRAY))
++			IORING_SETUP_NO_SQARRAY | IORING_SETUP_HY_POLL))
+ 		return -EINVAL;
+ 
+ 	return io_uring_create(entries, &p, params);
+diff --git a/io_uring/rw.c b/io_uring/rw.c
+index c004d21e2f12..4d32b9b9900b 100644
+--- a/io_uring/rw.c
++++ b/io_uring/rw.c
+@@ -772,6 +772,13 @@ static bool need_complete_io(struct io_kiocb *req)
+ 		S_ISBLK(file_inode(req->file)->i_mode);
+ }
+ 
++static void init_hybrid_poll(struct io_kiocb *req)
++{
++	/* make sure every req only block once*/
++	req->poll_state = false;
++	req->iopoll_start = ktime_get_ns();
++}
++
+ static int io_rw_init_file(struct io_kiocb *req, fmode_t mode, int rw_type)
+ {
+ 	struct io_rw *rw = io_kiocb_to_cmd(req, struct io_rw);
+@@ -809,6 +816,8 @@ static int io_rw_init_file(struct io_kiocb *req, fmode_t mode, int rw_type)
+ 		kiocb->ki_flags |= IOCB_HIPRI;
+ 		kiocb->ki_complete = io_complete_rw_iopoll;
+ 		req->iopoll_completed = 0;
++		if (ctx->flags & IORING_SETUP_HY_POLL)
++			init_hybrid_poll(req);
+ 	} else {
+ 		if (kiocb->ki_flags & IOCB_HIPRI)
+ 			return -EINVAL;
+@@ -1105,6 +1114,81 @@ void io_rw_fail(struct io_kiocb *req)
+ 	io_req_set_res(req, res, req->cqe.flags);
+ }
+ 
++static int io_uring_classic_poll(struct io_kiocb *req,
++		struct io_comp_batch *iob, unsigned int poll_flags)
++{
++	int ret;
++	struct file *file = req->file;
++
++	if (req->opcode == IORING_OP_URING_CMD) {
++		struct io_uring_cmd *ioucmd;
++
++		ioucmd = io_kiocb_to_cmd(req, struct io_uring_cmd);
++		ret = file->f_op->uring_cmd_iopoll(ioucmd, iob,
++						poll_flags);
++	} else {
++		struct io_rw *rw = io_kiocb_to_cmd(req, struct io_rw);
++
++		ret = file->f_op->iopoll(&rw->kiocb, iob, poll_flags);
++	}
++	return ret;
++}
++
++static u64 io_delay(struct io_ring_ctx *ctx, struct io_kiocb *req)
++{
++	struct hrtimer_sleeper timer;
++	enum hrtimer_mode mode;
++	ktime_t kt;
++	u64 sleep_time;
++
++	if (req->poll_state)
++		return 0;
++
++	if (ctx->available_time == LLONG_MAX)
++		return 0;
++
++	/* Using half running time to do schedul */
++	sleep_time = ctx->available_time / 2;
++
++	kt = ktime_set(0, sleep_time);
++	req->poll_state = true;
++
++	mode = HRTIMER_MODE_REL;
++	hrtimer_init_sleeper_on_stack(&timer, CLOCK_MONOTONIC, mode);
++	hrtimer_set_expires(&timer.timer, kt);
++	set_current_state(TASK_INTERRUPTIBLE);
++	hrtimer_sleeper_start_expires(&timer, mode);
++
++	if (timer.task)
++		io_schedule();
++
++	hrtimer_cancel(&timer.timer);
++	__set_current_state(TASK_RUNNING);
++	destroy_hrtimer_on_stack(&timer.timer);
++
++	return sleep_time;
++}
++
++static int io_uring_hybrid_poll(struct io_kiocb *req,
++				struct io_comp_batch *iob, unsigned int poll_flags)
++{
++	struct io_ring_ctx *ctx = req->ctx;
++	int ret;
++	u64 runtime, sleep_time;
++
++	sleep_time = io_delay(ctx, req);
++	ret = io_uring_classic_poll(req, iob, poll_flags);
++	req->iopoll_end = ktime_get_ns();
++	runtime = req->iopoll_end - req->iopoll_start - sleep_time;
++
++	/* use minimize sleep time if there are different speed
++	 * drivers, it could get more completions from fast one
++	 */
++	if (ctx->available_time > runtime)
++		ctx->available_time = runtime;
++	return ret;
++}
++
+ int io_do_iopoll(struct io_ring_ctx *ctx, bool force_nonspin)
+ {
+ 	struct io_wq_work_node *pos, *start, *prev;
+@@ -1121,7 +1205,6 @@ int io_do_iopoll(struct io_ring_ctx *ctx, bool force_nonspin)
+ 
+ 	wq_list_for_each(pos, start, &ctx->iopoll_list) {
+ 		struct io_kiocb *req = container_of(pos, struct io_kiocb, comp_list);
+-		struct file *file = req->file;
+ 		int ret;
+ 
+ 		/*
+@@ -1132,17 +1215,11 @@ int io_do_iopoll(struct io_ring_ctx *ctx, bool force_nonspin)
+ 		if (READ_ONCE(req->iopoll_completed))
+ 			break;
+ 
+-		if (req->opcode == IORING_OP_URING_CMD) {
+-			struct io_uring_cmd *ioucmd;
+-
+-			ioucmd = io_kiocb_to_cmd(req, struct io_uring_cmd);
+-			ret = file->f_op->uring_cmd_iopoll(ioucmd, &iob,
+-								poll_flags);
+-		} else {
+-			struct io_rw *rw = io_kiocb_to_cmd(req, struct io_rw);
++		if (ctx->flags & IORING_SETUP_HY_POLL)
++			ret = io_uring_hybrid_poll(req, &iob, poll_flags);
++		else
++			ret = io_uring_classic_poll(req, &iob, poll_flags);
+ 
+-			ret = file->f_op->iopoll(&rw->kiocb, &iob, poll_flags);
+-		}
+ 		if (unlikely(ret < 0))
+ 			return ret;
+ 		else if (ret)
+-- 
+2.46.0.469.g4590f2e941
+
+From d66d4da9e6fbd22780826ec7d55d65c3ecaf1e66 Mon Sep 17 00:00:00 2001
+From: graysky <therealgraysky AT proton DOT me>
+Date: Mon, 16 Sep 2024 05:55:58 -0400
+
+FEATURES
+This patch adds additional tunings via new x86-64 ISA levels and
+more micro-architecture options to the Linux kernel in three classes.
+
+1. New generic x86-64 ISA levels
+
+These are selectable under:
+	Processor type and features ---> x86-64 compiler ISA level
+
+• x86-64     A value of (1) is the default
+• x86-64-v2  A value of (2) brings support for vector
+             instructions up to Streaming SIMD Extensions 4.2 (SSE4.2)
+	     and Supplemental Streaming SIMD Extensions 3 (SSSE3), the
+	     POPCNT instruction, and CMPXCHG16B.
+• x86-64-v3  A value of (3) adds vector instructions up to AVX2, MOVBE,
+             and additional bit-manipulation instructions.
+
+There is also x86-64-v4 but including this makes little sense as
+the kernel does not use any of the AVX512 instructions anyway.
+
+Users of glibc 2.33 and above can see which level is supported by running:
+	/lib/ld-linux-x86-64.so.2 --help | grep supported
+Or
+	/lib64/ld-linux-x86-64.so.2 --help | grep supported
+
+2. New micro-architectures
+
+These are selectable under:
+	Processor type and features ---> Processor family 
+
+• AMD Improved K8-family
+• AMD K10-family
+• AMD Family 10h (Barcelona)
+• AMD Family 14h (Bobcat)
+• AMD Family 16h (Jaguar)
+• AMD Family 15h (Bulldozer)
+• AMD Family 15h (Piledriver)
+• AMD Family 15h (Steamroller)
+• AMD Family 15h (Excavator)
+• AMD Family 17h (Zen)
+• AMD Family 17h (Zen 2)
+• AMD Family 19h (Zen 3)**
+• AMD Family 19h (Zen 4)‡
+• AMD Family 1Ah (Zen 5)§
+• Intel Silvermont low-power processors
+• Intel Goldmont low-power processors (Apollo Lake and Denverton)
+• Intel Goldmont Plus low-power processors (Gemini Lake)
+• Intel 1st Gen Core i3/i5/i7 (Nehalem)
+• Intel 1.5 Gen Core i3/i5/i7 (Westmere)
+• Intel 2nd Gen Core i3/i5/i7 (Sandybridge)
+• Intel 3rd Gen Core i3/i5/i7 (Ivybridge)
+• Intel 4th Gen Core i3/i5/i7 (Haswell)
+• Intel 5th Gen Core i3/i5/i7 (Broadwell)
+• Intel 6th Gen Core i3/i5/i7 (Skylake)
+• Intel 6th Gen Core i7/i9 (Skylake X)
+• Intel 8th Gen Core i3/i5/i7 (Cannon Lake)
+• Intel 10th Gen Core i7/i9 (Ice Lake)
+• Intel Xeon (Cascade Lake)
+• Intel Xeon (Cooper Lake)*
+• Intel 3rd Gen 10nm++ i3/i5/i7/i9-family (Tiger Lake)*
+• Intel 4th Gen 10nm++ Xeon (Sapphire Rapids)†
+• Intel 11th Gen i3/i5/i7/i9-family (Rocket Lake)†
+• Intel 12th Gen i3/i5/i7/i9-family (Alder Lake)†
+• Intel 13th Gen i3/i5/i7/i9-family (Raptor Lake)‡
+• Intel 14th Gen i3/i5/i7/i9-family (Meteor Lake)‡
+• Intel 5th Gen 10nm++ Xeon (Emerald Rapids)‡
+
+Notes: If not otherwise noted, gcc >=9.1 is required for support.
+       *Requires gcc >=10.1 or clang >=10.0
+      **Required gcc >=10.3 or clang >=12.0
+       †Required gcc >=11.1 or clang >=12.0
+       ‡Required gcc >=13.0 or clang >=15.0.5
+       §Required gcc  >14.0 or clang >=19.0?
+
+3. Auto-detected micro-architecture levels
+
+Compile by passing the '-march=native' option which, "selects the CPU
+to generate code for at compilation time by determining the processor type of
+the compiling machine. Using -march=native enables all instruction subsets
+supported by the local machine and will produce code optimized for the local
+machine under the constraints of the selected instruction set."[1]
+
+Users of Intel CPUs should select the 'Intel-Native' option and users of AMD
+CPUs should select the 'AMD-Native' option.
+
+MINOR NOTES RELATING TO INTEL ATOM PROCESSORS
+This patch also changes -march=atom to -march=bonnell in accordance with the
+gcc v4.9 changes. Upstream is using the deprecated -match=atom flags when I
+believe it should use the newer -march=bonnell flag for atom processors.[2]
+
+It is not recommended to compile on Atom-CPUs with the 'native' option.[3] The
+recommendation is to use the 'atom' option instead.
+
+BENEFITS
+Small but real speed increases are measurable using a make endpoint comparing
+a generic kernel to one built with one of the respective microarchs.
+
+See the following experimental evidence supporting this statement:
+https://github.com/graysky2/kernel_compiler_patch?tab=readme-ov-file#benchmarks
+
+REQUIREMENTS
+linux version 6.1.79+
+gcc version >=9.0 or clang version >=9.0
+
+ACKNOWLEDGMENTS
+This patch builds on the seminal work by Jeroen.[4]
+
+REFERENCES
+1.  https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-x86-Options
+2.  https://bugzilla.kernel.org/show_bug.cgi?id=77461
+3.  https://github.com/graysky2/kernel_gcc_patch/issues/15
+4.  http://www.linuxforge.net/docs/linux/linux-gcc.php
+
+---
+ arch/x86/Kconfig.cpu            | 359 ++++++++++++++++++++++++++++++--
+ arch/x86/Makefile               |  87 +++++++-
+ arch/x86/include/asm/vermagic.h |  70 +++++++
+ 3 files changed, 499 insertions(+), 17 deletions(-)
+
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 2a7279d80460..abfadddd1b23 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -155,9 +155,8 @@ config MPENTIUM4
+ 		-Paxville
+ 		-Dempsey
+
+-
+ config MK6
+-	bool "K6/K6-II/K6-III"
++	bool "AMD K6/K6-II/K6-III"
+ 	depends on X86_32
+ 	help
+ 	  Select this for an AMD K6-family processor.  Enables use of
+@@ -165,7 +164,7 @@ config MK6
+ 	  flags to GCC.
+
+ config MK7
+-	bool "Athlon/Duron/K7"
++	bool "AMD Athlon/Duron/K7"
+ 	depends on X86_32
+ 	help
+ 	  Select this for an AMD Athlon K7-family processor.  Enables use of
+@@ -173,12 +172,114 @@ config MK7
+ 	  flags to GCC.
+
+ config MK8
+-	bool "Opteron/Athlon64/Hammer/K8"
++	bool "AMD Opteron/Athlon64/Hammer/K8"
+ 	help
+ 	  Select this for an AMD Opteron or Athlon64 Hammer-family processor.
+ 	  Enables use of some extended instructions, and passes appropriate
+ 	  optimization flags to GCC.
+
++config MK8SSE3
++	bool "AMD Opteron/Athlon64/Hammer/K8 with SSE3"
++	help
++	  Select this for improved AMD Opteron or Athlon64 Hammer-family processors.
++	  Enables use of some extended instructions, and passes appropriate
++	  optimization flags to GCC.
++
++config MK10
++	bool "AMD 61xx/7x50/PhenomX3/X4/II/K10"
++	help
++	  Select this for an AMD 61xx Eight-Core Magny-Cours, Athlon X2 7x50,
++	  Phenom X3/X4/II, Athlon II X2/X3/X4, or Turion II-family processor.
++	  Enables use of some extended instructions, and passes appropriate
++	  optimization flags to GCC.
++
++config MBARCELONA
++	bool "AMD Barcelona"
++	help
++	  Select this for AMD Family 10h Barcelona processors.
++
++	  Enables -march=barcelona
++
++config MBOBCAT
++	bool "AMD Bobcat"
++	help
++	  Select this for AMD Family 14h Bobcat processors.
++
++	  Enables -march=btver1
++
++config MJAGUAR
++	bool "AMD Jaguar"
++	help
++	  Select this for AMD Family 16h Jaguar processors.
++
++	  Enables -march=btver2
++
++config MBULLDOZER
++	bool "AMD Bulldozer"
++	help
++	  Select this for AMD Family 15h Bulldozer processors.
++
++	  Enables -march=bdver1
++
++config MPILEDRIVER
++	bool "AMD Piledriver"
++	help
++	  Select this for AMD Family 15h Piledriver processors.
++
++	  Enables -march=bdver2
++
++config MSTEAMROLLER
++	bool "AMD Steamroller"
++	help
++	  Select this for AMD Family 15h Steamroller processors.
++
++	  Enables -march=bdver3
++
++config MEXCAVATOR
++	bool "AMD Excavator"
++	help
++	  Select this for AMD Family 15h Excavator processors.
++
++	  Enables -march=bdver4
++
++config MZEN
++	bool "AMD Zen"
++	help
++	  Select this for AMD Family 17h Zen processors.
++
++	  Enables -march=znver1
++
++config MZEN2
++	bool "AMD Zen 2"
++	help
++	  Select this for AMD Family 17h Zen 2 processors.
++
++	  Enables -march=znver2
++
++config MZEN3
++	bool "AMD Zen 3"
++	depends on (CC_IS_GCC && GCC_VERSION >= 100300) || (CC_IS_CLANG && CLANG_VERSION >= 120000)
++	help
++	  Select this for AMD Family 19h Zen 3 processors.
++
++	  Enables -march=znver3
++
++config MZEN4
++	bool "AMD Zen 4"
++	depends on (CC_IS_GCC && GCC_VERSION >= 130000) || (CC_IS_CLANG && CLANG_VERSION >= 160000)
++	help
++	  Select this for AMD Family 19h Zen 4 processors.
++
++	  Enables -march=znver4
++
++config MZEN5
++	bool "AMD Zen 5"
++	depends on (CC_IS_GCC && GCC_VERSION > 140000) || (CC_IS_CLANG && CLANG_VERSION >= 191000)
++	help
++	  Select this for AMD Family 19h Zen 5 processors.
++
++	  Enables -march=znver5
++
+ config MCRUSOE
+ 	bool "Crusoe"
+ 	depends on X86_32
+@@ -269,8 +370,17 @@ config MPSC
+ 	  using the cpu family field
+ 	  in /proc/cpuinfo. Family 15 is an older Xeon, Family 6 a newer one.
+
++config MATOM
++	bool "Intel Atom"
++	help
++
++	  Select this for the Intel Atom platform. Intel Atom CPUs have an
++	  in-order pipelining architecture and thus can benefit from
++	  accordingly optimized code. Use a recent GCC with specific Atom
++	  support in order to fully benefit from selecting this option.
++
+ config MCORE2
+-	bool "Core 2/newer Xeon"
++	bool "Intel Core 2"
+ 	help
+
+ 	  Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 51xx and
+@@ -278,14 +388,191 @@ config MCORE2
+ 	  family in /proc/cpuinfo. Newer ones have 6 and older ones 15
+ 	  (not a typo)
+
+-config MATOM
+-	bool "Intel Atom"
++	  Enables -march=core2
++
++config MNEHALEM
++	bool "Intel Nehalem"
+ 	help
+
+-	  Select this for the Intel Atom platform. Intel Atom CPUs have an
+-	  in-order pipelining architecture and thus can benefit from
+-	  accordingly optimized code. Use a recent GCC with specific Atom
+-	  support in order to fully benefit from selecting this option.
++	  Select this for 1st Gen Core processors in the Nehalem family.
++
++	  Enables -march=nehalem
++
++config MWESTMERE
++	bool "Intel Westmere"
++	help
++
++	  Select this for the Intel Westmere formerly Nehalem-C family.
++
++	  Enables -march=westmere
++
++config MSILVERMONT
++	bool "Intel Silvermont"
++	help
++
++	  Select this for the Intel Silvermont platform.
++
++	  Enables -march=silvermont
++
++config MGOLDMONT
++	bool "Intel Goldmont"
++	help
++
++	  Select this for the Intel Goldmont platform including Apollo Lake and Denverton.
++
++	  Enables -march=goldmont
++
++config MGOLDMONTPLUS
++	bool "Intel Goldmont Plus"
++	help
++
++	  Select this for the Intel Goldmont Plus platform including Gemini Lake.
++
++	  Enables -march=goldmont-plus
++
++config MSANDYBRIDGE
++	bool "Intel Sandy Bridge"
++	help
++
++	  Select this for 2nd Gen Core processors in the Sandy Bridge family.
++
++	  Enables -march=sandybridge
++
++config MIVYBRIDGE
++	bool "Intel Ivy Bridge"
++	help
++
++	  Select this for 3rd Gen Core processors in the Ivy Bridge family.
++
++	  Enables -march=ivybridge
++
++config MHASWELL
++	bool "Intel Haswell"
++	help
++
++	  Select this for 4th Gen Core processors in the Haswell family.
++
++	  Enables -march=haswell
++
++config MBROADWELL
++	bool "Intel Broadwell"
++	help
++
++	  Select this for 5th Gen Core processors in the Broadwell family.
++
++	  Enables -march=broadwell
++
++config MSKYLAKE
++	bool "Intel Skylake"
++	help
++
++	  Select this for 6th Gen Core processors in the Skylake family.
++
++	  Enables -march=skylake
++
++config MSKYLAKEX
++	bool "Intel Skylake X"
++	help
++
++	  Select this for 6th Gen Core processors in the Skylake X family.
++
++	  Enables -march=skylake-avx512
++
++config MCANNONLAKE
++	bool "Intel Cannon Lake"
++	help
++
++	  Select this for 8th Gen Core processors
++
++	  Enables -march=cannonlake
++
++config MICELAKE
++	bool "Intel Ice Lake"
++	help
++
++	  Select this for 10th Gen Core processors in the Ice Lake family.
++
++	  Enables -march=icelake-client
++
++config MCASCADELAKE
++	bool "Intel Cascade Lake"
++	help
++
++	  Select this for Xeon processors in the Cascade Lake family.
++
++	  Enables -march=cascadelake
++
++config MCOOPERLAKE
++	bool "Intel Cooper Lake"
++	depends on (CC_IS_GCC && GCC_VERSION > 100100) || (CC_IS_CLANG && CLANG_VERSION >= 100000)
++	help
++
++	  Select this for Xeon processors in the Cooper Lake family.
++
++	  Enables -march=cooperlake
++
++config MTIGERLAKE
++	bool "Intel Tiger Lake"
++	depends on  (CC_IS_GCC && GCC_VERSION > 100100) || (CC_IS_CLANG && CLANG_VERSION >= 100000)
++	help
++
++	  Select this for third-generation 10 nm process processors in the Tiger Lake family.
++
++	  Enables -march=tigerlake
++
++config MSAPPHIRERAPIDS
++	bool "Intel Sapphire Rapids"
++	depends on (CC_IS_GCC && GCC_VERSION > 110000) || (CC_IS_CLANG && CLANG_VERSION >= 120000)
++	help
++
++	  Select this for fourth-generation 10 nm process processors in the Sapphire Rapids family.
++
++	  Enables -march=sapphirerapids
++
++config MROCKETLAKE
++	bool "Intel Rocket Lake"
++	depends on (CC_IS_GCC && GCC_VERSION > 110000) || (CC_IS_CLANG && CLANG_VERSION >= 120000)
++	help
++
++	  Select this for eleventh-generation processors in the Rocket Lake family.
++
++	  Enables -march=rocketlake
++
++config MALDERLAKE
++	bool "Intel Alder Lake"
++	depends on (CC_IS_GCC && GCC_VERSION > 110000) || (CC_IS_CLANG && CLANG_VERSION >= 120000)
++	help
++
++	  Select this for twelfth-generation processors in the Alder Lake family.
++
++	  Enables -march=alderlake
++
++config MRAPTORLAKE
++	bool "Intel Raptor Lake"
++	depends on (CC_IS_GCC && GCC_VERSION >= 130000) || (CC_IS_CLANG && CLANG_VERSION >= 150500)
++	help
++
++	  Select this for thirteenth-generation processors in the Raptor Lake family.
++
++	  Enables -march=raptorlake
++
++config MMETEORLAKE
++	bool "Intel Meteor Lake"
++	depends on (CC_IS_GCC && GCC_VERSION >= 130000) || (CC_IS_CLANG && CLANG_VERSION >= 150500)
++	help
++
++	  Select this for fourteenth-generation processors in the Meteor Lake family.
++
++	  Enables -march=meteorlake
++
++config MEMERALDRAPIDS
++	bool "Intel Emerald Rapids"
++	depends on (CC_IS_GCC && GCC_VERSION > 130000) || (CC_IS_CLANG && CLANG_VERSION >= 150500)
++	help
++
++	  Select this for fifth-generation 10 nm process processors in the Emerald Rapids family.
++
++	  Enables -march=emeraldrapids
+
+ config GENERIC_CPU
+ 	bool "Generic-x86-64"
+@@ -294,6 +581,26 @@ config GENERIC_CPU
+ 	  Generic x86-64 CPU.
+ 	  Run equally well on all x86-64 CPUs.
+
++config MNATIVE_INTEL
++	bool "Intel-Native optimizations autodetected by the compiler"
++	help
++
++	  Clang 3.8, GCC 4.2 and above support -march=native, which automatically detects
++	  the optimum settings to use based on your processor. Do NOT use this
++	  for AMD CPUs.  Intel Only!
++
++	  Enables -march=native
++
++config MNATIVE_AMD
++	bool "AMD-Native optimizations autodetected by the compiler"
++	help
++
++	  Clang 3.8, GCC 4.2 and above support -march=native, which automatically detects
++	  the optimum settings to use based on your processor. Do NOT use this
++	  for Intel CPUs.  AMD Only!
++
++	  Enables -march=native
++
+ endchoice
+
+ config X86_GENERIC
+@@ -308,6 +615,30 @@ config X86_GENERIC
+ 	  This is really intended for distributors who need more
+ 	  generic optimizations.
+
++config X86_64_VERSION
++	int "x86-64 compiler ISA level"
++	range 1 3
++	depends on (CC_IS_GCC && GCC_VERSION > 110000) || (CC_IS_CLANG && CLANG_VERSION >= 120000)
++	depends on X86_64 && GENERIC_CPU
++	help
++	  Specify a specific x86-64 compiler ISA level.
++
++	  There are three x86-64 ISA levels that work on top of
++	  the x86-64 baseline, namely: x86-64-v2, x86-64-v3, and x86-64-v4.
++
++	  x86-64-v2 brings support for vector instructions up to Streaming SIMD
++	  Extensions 4.2 (SSE4.2) and Supplemental Streaming SIMD Extensions 3
++	  (SSSE3), the POPCNT instruction, and CMPXCHG16B.
++
++	  x86-64-v3 adds vector instructions up to AVX2, MOVBE, and additional
++	  bit-manipulation instructions.
++
++	  x86-64-v4 is not included since the kernel does not use AVX512 instructions
++
++	  You can find the best version for your CPU by running one of the following:
++	  /lib/ld-linux-x86-64.so.2 --help | grep supported
++	  /lib64/ld-linux-x86-64.so.2 --help | grep supported
++
+ #
+ # Define implied options from the CPU selection here
+ config X86_INTERNODE_CACHE_SHIFT
+@@ -318,7 +649,7 @@ config X86_INTERNODE_CACHE_SHIFT
+ config X86_L1_CACHE_SHIFT
+ 	int
+ 	default "7" if MPENTIUM4 || MPSC
+-	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MATOM || MVIAC7 || X86_GENERIC || GENERIC_CPU
++	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MATOM || MVIAC7 || X86_GENERIC || GENERIC_CPU || MK8SSE3 || MK10 || MBARCELONA || MBOBCAT || MJAGUAR || MBULLDOZER || MPILEDRIVER || MSTEAMROLLER || MEXCAVATOR || MZEN || MZEN2 || MZEN3 || MZEN4 || MZEN5 || MNEHALEM || MWESTMERE || MSILVERMONT || MGOLDMONT || MGOLDMONTPLUS || MSANDYBRIDGE || MIVYBRIDGE || MHASWELL || MBROADWELL || MSKYLAKE || MSKYLAKEX || MCANNONLAKE || MICELAKE || MCASCADELAKE || MCOOPERLAKE || MTIGERLAKE || MSAPPHIRERAPIDS || MROCKETLAKE || MALDERLAKE || MRAPTORLAKE || MMETEORLAKE || MEMERALDRAPIDS || MNATIVE_INTEL || MNATIVE_AMD
+ 	default "4" if MELAN || M486SX || M486 || MGEODEGX1
+ 	default "5" if MWINCHIP3D || MWINCHIPC6 || MCRUSOE || MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX
+
+@@ -336,11 +667,11 @@ config X86_ALIGNMENT_16
+
+ config X86_INTEL_USERCOPY
+ 	def_bool y
+-	depends on MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M586MMX || X86_GENERIC || MK8 || MK7 || MEFFICEON || MCORE2
++	depends on MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M586MMX || X86_GENERIC || MK8 || MK7 || MEFFICEON || MCORE2 || MNEHALEM || MWESTMERE || MSILVERMONT || MGOLDMONT || MGOLDMONTPLUS || MSANDYBRIDGE || MIVYBRIDGE || MHASWELL || MBROADWELL || MSKYLAKE || MSKYLAKEX || MCANNONLAKE || MICELAKE || MCASCADELAKE || MCOOPERLAKE || MTIGERLAKE || MSAPPHIRERAPIDS || MROCKETLAKE || MALDERLAKE || MRAPTORLAKE || MMETEORLAKE || MEMERALDRAPIDS || MNATIVE_INTEL
+
+ config X86_USE_PPRO_CHECKSUM
+ 	def_bool y
+-	depends on MWINCHIP3D || MWINCHIPC6 || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MK8 || MVIAC3_2 || MVIAC7 || MEFFICEON || MGEODE_LX || MCORE2 || MATOM
++	depends on MWINCHIP3D || MWINCHIPC6 || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MK8 || MVIAC3_2 || MVIAC7 || MEFFICEON || MGEODE_LX || MCORE2 || MATOM || MK8SSE3 || MK10 || MBARCELONA || MBOBCAT || MJAGUAR || MBULLDOZER || MPILEDRIVER || MSTEAMROLLER || MEXCAVATOR || MZEN || MZEN2 || MZEN3 || MZEN4 || MZEN5 || MNEHALEM || MWESTMERE || MSILVERMONT || MGOLDMONT || MGOLDMONTPLUS || MSANDYBRIDGE || MIVYBRIDGE || MHASWELL || MBROADWELL || MSKYLAKE || MSKYLAKEX || MCANNONLAKE || MICELAKE || MCASCADELAKE || MCOOPERLAKE || MTIGERLAKE || MSAPPHIRERAPIDS || MROCKETLAKE || MALDERLAKE || MRAPTORLAKE || MMETEORLAKE || MEMERALDRAPIDS || MNATIVE_INTEL || MNATIVE_AMD
+
+ #
+ # P6_NOPs are a relatively minor optimization that require a family >=
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index cd75e78a06c1..396d1db12bca 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -181,15 +181,96 @@ else
+         cflags-$(CONFIG_MK8)		+= -march=k8
+         cflags-$(CONFIG_MPSC)		+= -march=nocona
+         cflags-$(CONFIG_MCORE2)		+= -march=core2
+-        cflags-$(CONFIG_MATOM)		+= -march=atom
+-        cflags-$(CONFIG_GENERIC_CPU)	+= -mtune=generic
++        cflags-$(CONFIG_MATOM)		+= -march=bonnell
++        ifeq ($(CONFIG_X86_64_VERSION),1)
++          cflags-$(CONFIG_GENERIC_CPU)		+= -mtune=generic
++          rustflags-$(CONFIG_GENERIC_CPU)	+= -Ztune-cpu=generic
++        else
++          cflags-$(CONFIG_GENERIC_CPU)		+= -march=x86-64-v$(CONFIG_X86_64_VERSION)
++          rustflags-$(CONFIG_GENERIC_CPU)	+= -Ctarget-cpu=x86-64-v$(CONFIG_X86_64_VERSION)
++        endif
++        cflags-$(CONFIG_MK8SSE3)	+= -march=k8-sse3
++        cflags-$(CONFIG_MK10) 		+= -march=amdfam10
++        cflags-$(CONFIG_MBARCELONA) 	+= -march=barcelona
++        cflags-$(CONFIG_MBOBCAT) 	+= -march=btver1
++        cflags-$(CONFIG_MJAGUAR) 	+= -march=btver2
++        cflags-$(CONFIG_MBULLDOZER) 	+= -march=bdver1
++        cflags-$(CONFIG_MPILEDRIVER)	+= -march=bdver2 -mno-tbm
++        cflags-$(CONFIG_MSTEAMROLLER) 	+= -march=bdver3 -mno-tbm
++        cflags-$(CONFIG_MEXCAVATOR) 	+= -march=bdver4 -mno-tbm
++        cflags-$(CONFIG_MZEN) 		+= -march=znver1
++        cflags-$(CONFIG_MZEN2) 	+= -march=znver2
++        cflags-$(CONFIG_MZEN3) 	+= -march=znver3
++        cflags-$(CONFIG_MZEN4) 	+= -march=znver4
++        cflags-$(CONFIG_MZEN5) 	+= -march=znver5
++        cflags-$(CONFIG_MNATIVE_INTEL) += -march=native
++        cflags-$(CONFIG_MNATIVE_AMD) 	+= -march=native -mno-tbm
++        cflags-$(CONFIG_MNEHALEM) 	+= -march=nehalem
++        cflags-$(CONFIG_MWESTMERE) 	+= -march=westmere
++        cflags-$(CONFIG_MSILVERMONT) 	+= -march=silvermont
++        cflags-$(CONFIG_MGOLDMONT) 	+= -march=goldmont
++        cflags-$(CONFIG_MGOLDMONTPLUS) += -march=goldmont-plus
++        cflags-$(CONFIG_MSANDYBRIDGE) 	+= -march=sandybridge
++        cflags-$(CONFIG_MIVYBRIDGE) 	+= -march=ivybridge
++        cflags-$(CONFIG_MHASWELL) 	+= -march=haswell
++        cflags-$(CONFIG_MBROADWELL) 	+= -march=broadwell
++        cflags-$(CONFIG_MSKYLAKE) 	+= -march=skylake
++        cflags-$(CONFIG_MSKYLAKEX) 	+= -march=skylake-avx512
++        cflags-$(CONFIG_MCANNONLAKE) 	+= -march=cannonlake
++        cflags-$(CONFIG_MICELAKE) 	+= -march=icelake-client
++        cflags-$(CONFIG_MCASCADELAKE) 	+= -march=cascadelake
++        cflags-$(CONFIG_MCOOPERLAKE) 	+= -march=cooperlake
++        cflags-$(CONFIG_MTIGERLAKE) 	+= -march=tigerlake
++        cflags-$(CONFIG_MSAPPHIRERAPIDS) += -march=sapphirerapids
++        cflags-$(CONFIG_MROCKETLAKE) 	+= -march=rocketlake
++        cflags-$(CONFIG_MALDERLAKE) 	+= -march=alderlake
++        cflags-$(CONFIG_MRAPTORLAKE) 	+= -march=raptorlake
++        cflags-$(CONFIG_MMETEORLAKE) 	+= -march=meteorlake
++        cflags-$(CONFIG_MEMERALDRAPIDS)	+= -march=emeraldrapids
+         KBUILD_CFLAGS += $(cflags-y)
+
+         rustflags-$(CONFIG_MK8)		+= -Ctarget-cpu=k8
+         rustflags-$(CONFIG_MPSC)	+= -Ctarget-cpu=nocona
+         rustflags-$(CONFIG_MCORE2)	+= -Ctarget-cpu=core2
+         rustflags-$(CONFIG_MATOM)	+= -Ctarget-cpu=atom
+-        rustflags-$(CONFIG_GENERIC_CPU)	+= -Ztune-cpu=generic
++        rustflags-$(CONFIG_MK8SSE3)	+= -Ctarget-cpu=k8-sse3
++        rustflags-$(CONFIG_MK10) 		+= -Ctarget-cpu=amdfam10
++        rustflags-$(CONFIG_MBARCELONA) 	+= -Ctarget-cpu=barcelona
++        rustflags-$(CONFIG_MBOBCAT) 	+= -Ctarget-cpu=btver1
++        rustflags-$(CONFIG_MJAGUAR) 	+= -Ctarget-cpu=btver2
++        rustflags-$(CONFIG_MBULLDOZER) 	+= -Ctarget-cpu=bdver1
++        rustflags-$(CONFIG_MPILEDRIVER)	+= -Ctarget-cpu=bdver2
++        rustflags-$(CONFIG_MSTEAMROLLER) 	+= -Ctarget-cpu=bdver3
++        rustflags-$(CONFIG_MEXCAVATOR) 	+= -Ctarget-cpu=bdver4
++        rustflags-$(CONFIG_MZEN) 		+= -Ctarget-cpu=znver1
++        rustflags-$(CONFIG_MZEN2) 	+= -Ctarget-cpu=znver2
++        rustflags-$(CONFIG_MZEN3) 	+= -Ctarget-cpu=znver3
++        rustflags-$(CONFIG_MZEN4) 	+= -Ctarget-cpu=znver4
++        rustflags-$(CONFIG_MZEN5) 	+= -Ctarget-cpu=znver5
++        rustflags-$(CONFIG_MNATIVE_INTEL) += -Ctarget-cpu=native
++        rustflags-$(CONFIG_MNATIVE_AMD) 	+= -Ctarget-cpu=native
++        rustflags-$(CONFIG_MNEHALEM) 	+= -Ctarget-cpu=nehalem
++        rustflags-$(CONFIG_MWESTMERE) 	+= -Ctarget-cpu=westmere
++        rustflags-$(CONFIG_MSILVERMONT) 	+= -Ctarget-cpu=silvermont
++        rustflags-$(CONFIG_MGOLDMONT) 	+= -Ctarget-cpu=goldmont
++        rustflags-$(CONFIG_MGOLDMONTPLUS) += -Ctarget-cpu=goldmont-plus
++        rustflags-$(CONFIG_MSANDYBRIDGE) 	+= -Ctarget-cpu=sandybridge
++        rustflags-$(CONFIG_MIVYBRIDGE) 	+= -Ctarget-cpu=ivybridge
++        rustflags-$(CONFIG_MHASWELL) 	+= -Ctarget-cpu=haswell
++        rustflags-$(CONFIG_MBROADWELL) 	+= -Ctarget-cpu=broadwell
++        rustflags-$(CONFIG_MSKYLAKE) 	+= -Ctarget-cpu=skylake
++        rustflags-$(CONFIG_MSKYLAKEX) 	+= -Ctarget-cpu=skylake-avx512
++        rustflags-$(CONFIG_MCANNONLAKE) 	+= -Ctarget-cpu=cannonlake
++        rustflags-$(CONFIG_MICELAKE) 	+= -Ctarget-cpu=icelake-client
++        rustflags-$(CONFIG_MCASCADELAKE) 	+= -Ctarget-cpu=cascadelake
++        rustflags-$(CONFIG_MCOOPERLAKE) 	+= -Ctarget-cpu=cooperlake
++        rustflags-$(CONFIG_MTIGERLAKE) 	+= -Ctarget-cpu=tigerlake
++        rustflags-$(CONFIG_MSAPPHIRERAPIDS) += -Ctarget-cpu=sapphirerapids
++        rustflags-$(CONFIG_MROCKETLAKE) 	+= -Ctarget-cpu=rocketlake
++        rustflags-$(CONFIG_MALDERLAKE) 	+= -Ctarget-cpu=alderlake
++        rustflags-$(CONFIG_MRAPTORLAKE) 	+= -Ctarget-cpu=raptorlake
++        rustflags-$(CONFIG_MMETEORLAKE) 	+= -Ctarget-cpu=meteorlake
++        rustflags-$(CONFIG_MEMERALDRAPIDS)	+= -Ctarget-cpu=emeraldrapids
+         KBUILD_RUSTFLAGS += $(rustflags-y)
+
+         KBUILD_CFLAGS += -mno-red-zone
+diff --git a/arch/x86/include/asm/vermagic.h b/arch/x86/include/asm/vermagic.h
+index 75884d2cdec3..f4e29563473d 100644
+--- a/arch/x86/include/asm/vermagic.h
++++ b/arch/x86/include/asm/vermagic.h
+@@ -17,6 +17,54 @@
+ #define MODULE_PROC_FAMILY "586MMX "
+ #elif defined CONFIG_MCORE2
+ #define MODULE_PROC_FAMILY "CORE2 "
++#elif defined CONFIG_MNATIVE_INTEL
++#define MODULE_PROC_FAMILY "NATIVE_INTEL "
++#elif defined CONFIG_MNATIVE_AMD
++#define MODULE_PROC_FAMILY "NATIVE_AMD "
++#elif defined CONFIG_MNEHALEM
++#define MODULE_PROC_FAMILY "NEHALEM "
++#elif defined CONFIG_MWESTMERE
++#define MODULE_PROC_FAMILY "WESTMERE "
++#elif defined CONFIG_MSILVERMONT
++#define MODULE_PROC_FAMILY "SILVERMONT "
++#elif defined CONFIG_MGOLDMONT
++#define MODULE_PROC_FAMILY "GOLDMONT "
++#elif defined CONFIG_MGOLDMONTPLUS
++#define MODULE_PROC_FAMILY "GOLDMONTPLUS "
++#elif defined CONFIG_MSANDYBRIDGE
++#define MODULE_PROC_FAMILY "SANDYBRIDGE "
++#elif defined CONFIG_MIVYBRIDGE
++#define MODULE_PROC_FAMILY "IVYBRIDGE "
++#elif defined CONFIG_MHASWELL
++#define MODULE_PROC_FAMILY "HASWELL "
++#elif defined CONFIG_MBROADWELL
++#define MODULE_PROC_FAMILY "BROADWELL "
++#elif defined CONFIG_MSKYLAKE
++#define MODULE_PROC_FAMILY "SKYLAKE "
++#elif defined CONFIG_MSKYLAKEX
++#define MODULE_PROC_FAMILY "SKYLAKEX "
++#elif defined CONFIG_MCANNONLAKE
++#define MODULE_PROC_FAMILY "CANNONLAKE "
++#elif defined CONFIG_MICELAKE
++#define MODULE_PROC_FAMILY "ICELAKE "
++#elif defined CONFIG_MCASCADELAKE
++#define MODULE_PROC_FAMILY "CASCADELAKE "
++#elif defined CONFIG_MCOOPERLAKE
++#define MODULE_PROC_FAMILY "COOPERLAKE "
++#elif defined CONFIG_MTIGERLAKE
++#define MODULE_PROC_FAMILY "TIGERLAKE "
++#elif defined CONFIG_MSAPPHIRERAPIDS
++#define MODULE_PROC_FAMILY "SAPPHIRERAPIDS "
++#elif defined CONFIG_ROCKETLAKE
++#define MODULE_PROC_FAMILY "ROCKETLAKE "
++#elif defined CONFIG_MALDERLAKE
++#define MODULE_PROC_FAMILY "ALDERLAKE "
++#elif defined CONFIG_MRAPTORLAKE
++#define MODULE_PROC_FAMILY "RAPTORLAKE "
++#elif defined CONFIG_MMETEORLAKE
++#define MODULE_PROC_FAMILY "METEORLAKE "
++#elif defined CONFIG_MEMERALDRAPIDS
++#define MODULE_PROC_FAMILY "EMERALDRAPIDS "
+ #elif defined CONFIG_MATOM
+ #define MODULE_PROC_FAMILY "ATOM "
+ #elif defined CONFIG_M686
+@@ -35,6 +83,28 @@
+ #define MODULE_PROC_FAMILY "K7 "
+ #elif defined CONFIG_MK8
+ #define MODULE_PROC_FAMILY "K8 "
++#elif defined CONFIG_MK8SSE3
++#define MODULE_PROC_FAMILY "K8SSE3 "
++#elif defined CONFIG_MK10
++#define MODULE_PROC_FAMILY "K10 "
++#elif defined CONFIG_MBARCELONA
++#define MODULE_PROC_FAMILY "BARCELONA "
++#elif defined CONFIG_MBOBCAT
++#define MODULE_PROC_FAMILY "BOBCAT "
++#elif defined CONFIG_MBULLDOZER
++#define MODULE_PROC_FAMILY "BULLDOZER "
++#elif defined CONFIG_MPILEDRIVER
++#define MODULE_PROC_FAMILY "PILEDRIVER "
++#elif defined CONFIG_MSTEAMROLLER
++#define MODULE_PROC_FAMILY "STEAMROLLER "
++#elif defined CONFIG_MJAGUAR
++#define MODULE_PROC_FAMILY "JAGUAR "
++#elif defined CONFIG_MEXCAVATOR
++#define MODULE_PROC_FAMILY "EXCAVATOR "
++#elif defined CONFIG_MZEN
++#define MODULE_PROC_FAMILY "ZEN "
++#elif defined CONFIG_MZEN2
++#define MODULE_PROC_FAMILY "ZEN2 "
+ #elif defined CONFIG_MELAN
+ #define MODULE_PROC_FAMILY "ELAN "
+ #elif defined CONFIG_MCRUSOE
+--
+2.46.2
+
+From 1e5a4a3f9c67c5abea53df6881192c8c5f43765c Mon Sep 17 00:00:00 2001
+From: Eric Naim <dnaim@cachyos.org>
+Date: Sat, 21 Sep 2024 23:46:05 +0800
+Subject: [PATCH] Remove some Werror CFLAGS to increase compatibility with some
+ DKMS modules in clang-built kernels
+
+Signed-off-by: Eric Naim <dnaim@cachyos.org>
+---
+ scripts/Makefile.clang     | 2 --
+ scripts/Makefile.extrawarn | 4 ----
+ 2 files changed, 6 deletions(-)
+
+diff --git a/scripts/Makefile.clang b/scripts/Makefile.clang
+index 6c23c6af797f..59b2e19416af 100644
+--- a/scripts/Makefile.clang
++++ b/scripts/Makefile.clang
+@@ -31,9 +31,7 @@ endif
+ # certain optimization flags it knows it has not implemented.
+ # Make it behave more like gcc by erroring when these flags are encountered
+ # so they can be implemented or wrapped in cc-option.
+-CLANG_FLAGS	+= -Werror=unknown-warning-option
+ CLANG_FLAGS	+= -Werror=ignored-optimization-argument
+ CLANG_FLAGS	+= -Werror=option-ignored
+-CLANG_FLAGS	+= -Werror=unused-command-line-argument
+ KBUILD_CPPFLAGS	+= $(CLANG_FLAGS)
+ export CLANG_FLAGS
+diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
+index 1d13cecc7cc7..ec97275c8852 100644
+--- a/scripts/Makefile.extrawarn
++++ b/scripts/Makefile.extrawarn
+@@ -12,7 +12,6 @@ KBUILD_CFLAGS += -Wundef
+ KBUILD_CFLAGS += -Werror=implicit-function-declaration
+ KBUILD_CFLAGS += -Werror=implicit-int
+ KBUILD_CFLAGS += -Werror=return-type
+-KBUILD_CFLAGS += -Werror=strict-prototypes
+ KBUILD_CFLAGS += -Wno-format-security
+ KBUILD_CFLAGS += -Wno-trigraphs
+ KBUILD_CFLAGS += $(call cc-disable-warning,frame-address,)
+@@ -68,9 +67,6 @@ KBUILD_CFLAGS += $(KBUILD_CFLAGS-y) $(CONFIG_CC_IMPLICIT_FALLTHROUGH)
+ # Prohibit date/time macros, which would make the build non-deterministic
+ KBUILD_CFLAGS += -Werror=date-time
+ 
+-# enforce correct pointer usage
+-KBUILD_CFLAGS += $(call cc-option,-Werror=incompatible-pointer-types)
+-
+ # Require designated initializers for all marked structures
+ KBUILD_CFLAGS += $(call cc-option,-Werror=designated-init)
+ 
+-- 
+2.46.1
+
