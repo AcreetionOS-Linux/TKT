@@ -858,7 +858,7 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
   if [ "$_kver" = "612" ]; then
   _msg="Applying ETJAKEOC super patch"
   tkgpatch="$srcdir/ETJAKEOC-super-patch.patch" && _tkg_patcher
-  elif
+  else
   _msg="Applying ETJAKEOC's Memory patch"
   tkgpatch="$srcdir/0015-ETJAKEOC-Memory.patch" && _tkg_patcher
   _msg="Applying ETJAKEOC's CPU patch"
