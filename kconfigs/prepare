@@ -863,6 +863,8 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
   tkgpatch="$srcdir/0015-ETJAKEOC-Memory.patch" && _tkg_patcher
   _msg="Applying ETJAKEOC's CPU patch"
   tkgpatch="$srcdir/0016-ETJAKEOC-CPU-release.patch" && _tkg_patcher
+  _msg="Applying ETJAKEOC's More micro-arches patch"
+  tkgpatch="$srcdir/0017-ETJAKEOC-more-uraches.patch" && _tkg_patcher
   fi
 
   if [ -z "${_configfile}" ]; then
