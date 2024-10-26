@@ -855,6 +855,11 @@ echo "-${_custom_pkgbase}" > localversion.10-pkgrel
 
   fi
 
+   if [[ "$_kver" == "612" ]]; then
+    _msg="Applying ETJAKEOC's patches"
+    tkgpatch="$srcdir/*ETJAKEOC*.patch" && _tkg_patcher
+  fi
+
   if [ -z "${_configfile}" ]; then
     msg2 "Using archlinux's default config file for kernel ${_basekernel}"
     cat "${srcdir}"/config.x86_64 > ./.config

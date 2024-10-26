@@ -340,46 +340,6 @@ index b0cefe94920d..890165099b07 100644
 -- 
 2.28.0
 
-From 977812938da7c7226415778c340832141d9278b7 Mon Sep 17 00:00:00 2001
-From: Alexandre Frade <admfrade@gmail.com>
-Date: Mon, 25 Nov 2019 15:13:06 -0300
-Subject: [PATCH 14/17] elevator: set default scheduler to bfq for blk-mq
-
-Signed-off-by: Alexandre Frade <admfrade@gmail.com>
----
- block/elevator.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/block/elevator.c b/block/elevator.c
-index 4eab3d70e880..79669aa39d79 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -623,19 +623,19 @@ static inline bool elv_support_iosched(struct request_queue *q)
- }
- 
- /*
-- * For single queue devices, default to using mq-deadline. If we have multiple
-- * queues or mq-deadline is not available, default to "none".
-+ * For single queue devices, default to using bfq. If we have multiple
-+ * queues or bfq is not available, default to "none".
-  */
- static struct elevator_type *elevator_get_default(struct request_queue *q)
- {
- 	if (q->tag_set && q->tag_set->flags & BLK_MQ_F_NO_SCHED_BY_DEFAULT)
- 		return NULL;
-
- 	if (q->nr_hw_queues != 1 &&
- 	    !blk_mq_is_shared_tags(q->tag_set->flags))
- 		return NULL;
- 
--	return elevator_find_get(q, "mq-deadline");
-+	return elevator_find_get(q, "bfq");
- }
- 
- /*
--- 
-2.28.0
-
 From 3c229f434aca65c4ca61772bc03c3e0370817b92 Mon Sep 17 00:00:00 2001
 From: Alexandre Frade <kernel@xanmod.org>
 Date: Mon, 3 Aug 2020 17:05:04 +0000
