@@ -139,3 +139,7 @@ cd TKT
 ./install.sh install
 ```
 **Note:** If you're running openrc, you'll want to set `_configfile="running-kernel"` to use your current kernel's defconfig instead of Arch's. Else the resulting kernel won't boot.
+
+#### Included script!!!
+You may notice a random script file in this repository called `initramfs-and-grub-update.sh`. This script *should* provide you with the most basic setup to recompile your initramfs, and resetup the GRUB2 bootmenu after compiling your kernel.
+This has not been tested on all systemd, results may vary, you may have to adapt to fit your system.
