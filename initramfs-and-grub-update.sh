@@ -11,17 +11,17 @@ echo "Please press enter to continue."
 read -r dummy_variable
 
 # Find the TKT kernel package
-tkg_k=$(find /lib/modules -name 'kernel*tgt*')
+tkt_k=$(find /lib/modules -name 'kernel*tkt*')
 
-if [ -z "$tkg_k" ]; then
+if [ -z "$tkt_k" ]; then
     echo "Error: TKT kernel package not found."
     exit 1
 fi
 
 # Extract the kernel version from the package filename
-tkg_version=$(basename "$tkg_k" | sed 's/kernel-\([0-9.]*\).*/\1/')
+tkt_version=$(basename "$tkt_k" | sed 's/kernel-\([0-9.]*\).*/\1/')
 
-if [ -z "$tkg_version" ]; then
+if [ -z "$tkt_version" ]; then
     echo "Error: Unable to extract TKT kernel version."
     exit 1
 fi
@@ -63,7 +63,7 @@ if [ "$use_dracut" = true ]; then
     sudo dracut --kver "$tkt_version"
 elif [ "$use_mkinitcpio" = true ]; then
     echo "Running 'mkinitcpio' to generate the 'initramfs' file..."
-    sudo mkinitcpio -k "$tkt_version" -g "/boot/initramfs-${tkg_version}.img"
+    sudo mkinitcpio -k "$tkt_version" -g "/boot/initramfs-${tkt_version}.img"
 elif [ "$use_update_initramfs" = true ]; then
     echo "Running 'update-initramfs' to generate the 'initramfs' file..."
     sudo update-initramfs -c -k "$tkt_version"
@@ -76,4 +76,4 @@ fi
 echo "Updating the GRUB boot loader menu to add the new kernel..."
 sudo "$grub_config_command" -o /boot/grub/grub.cfg
 
-echo "Everything completed successfully."
+echo "Everything completed successfully. Please reboot, and enjoy your new kernel! :D"
