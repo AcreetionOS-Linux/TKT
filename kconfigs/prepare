@@ -365,35 +365,73 @@ _set_compiler(){
     fi
   fi
 
-  if [ "$_compiler" = "llvm" ]; then
+if [ "$_compiler" = "llvm" ]; then
     _compiler_name="-llvm"
     llvm_opt="LLVM=1 LLVM_IAS=${_llvm_ias:-0}"
-    if [ $_kver -ge 512 ]; then
-      if [[ -z "$_lto_mode" || ! "$_lto_mode" =~ ^(no|thin|full)$ ]]; then
-        plain "Would you like to enable Clang Link Time Optimizations (LTO) ? It may improve the performance of the kernel."
-        warning "This is currently experimental and might result in an unbootable kernel - Not recommended"
-        _lto_prompt_array=(
-          "No: do not enable LTO"
-          "Full: uses 1 thread for Linking, slow and uses more memory, theoretically with the highest performance gains."
-          "Thin: uses multiple threads, faster and uses less memory, may have a lower runtime performance than Full."
-        )
-        _lto_mode_array=("no" "full" "thin")
 
-        _default_index="0"
-        _prompt_from_array "${_lto_prompt_array[@]}"
-        _lto_mode="${_lto_mode_array[$_selected_index]}"
-      fi
-      if [ "$_lto_mode" != "no" ]; then
-        llvm_opt="LLVM=1 LLVM_IAS=1"
-      fi
-    elif [[ -n "$_lto_mode" && "$_lto_mode" != "no" ]]; then
-      warning "Clang LTO is only available on linux 5.12 onwards."
-      _lto_mode="no"
+    if [ $_kver -ge 512 ]; then
+        # LTO Selection
+        if [[ -z "$_lto_mode" || ! "$_lto_mode" =~ ^(no|thin|full)$ ]]; then
+            plain "Would you like to enable Clang Link Time Optimizations (LTO)? It may improve the performance of the kernel."
+            warning "This is currently experimental and might result in an unbootable kernel - Not recommended"
+            _lto_prompt_array=(
+              "No: do not enable LTO"
+              "Full: uses 1 thread for Linking, slow and uses more memory, theoretically with the highest performance gains."
+              "Thin: uses multiple threads, faster and uses less memory, may have a lower runtime performance than Full."
+            )
+            _lto_mode_array=("no" "full" "thin")
+
+            _default_index="0"
+            _prompt_from_array "${_lto_prompt_array[@]}"
+            _lto_mode="${_lto_mode_array[$_selected_index]}"
+        fi
+        if [ "$_lto_mode" != "no" ]; then
+            llvm_opt="LLVM=1 LLVM_IAS=1"
+        fi
+
+        # PGO Selection
+        if [[ -z "$_pgo_config" || ! "$_pgo_config" =~ ^(false|generate|use)$ ]]; then
+            plain "Would you like to enable Profile-Guided Optimization (PGO)? It can further optimize the kernel for your system."
+            warning "Generating profiling data requires running the kernel built with PGO generation enabled before using PGO optimizations."
+            _pgo_prompt_array=(
+              "False: do not enable PGO"
+              "Generate: build the kernel to collect profiling data"
+              "Use: use profiling data to optimize the kernel"
+            )
+            _pgo_mode_array=("false" "generate" "use")
+
+            _default_index="0"
+            _prompt_from_array "${_pgo_prompt_array[@]}"
+            _pgo_config="${_pgo_mode_array[$_selected_index]}"
+        fi
+
+        # Set PGO Flags
+        if [ "$_pgo_config" = "generate" ]; then
+            msg2 "Enabling PGO: Generating profiling data"
+            export KCFLAGS="${KCFLAGS} -fprofile-generate=${_pgo_profile_dir:-/var/lib/pgo}"
+        elif [ "$_pgo_config" = "use" ]; then
+            if [ ! -d "${_pgo_profile_dir:-/var/lib/pgo}" ]; then
+                error "Profiling data directory ${_pgo_profile_dir:-/var/lib/pgo} does not exist!"
+                exit 1
+            fi
+            msg2 "Enabling PGO: Using profiling data"
+            export KCFLAGS="${KCFLAGS} -fprofile-use=${_pgo_profile_dir:-/var/lib/pgo} -fprofile-correction"
+        fi
+    else
+        # Reset LTO and PGO for unsupported kernel versions
+        if [[ -n "$_lto_mode" && "$_lto_mode" != "no" ]]; then
+            warning "Clang LTO is only available on Linux 5.12 onwards."
+            _lto_mode="no"
+        fi
+        if [[ -n "$_pgo_config" && "$_pgo_config" != "false" ]]; then
+            warning "PGO is only available on Linux 5.12 onwards."
+            _pgo_config="false"
+        fi
     fi
-  else # GCC
+else # GCC
     _compiler_name=""
     llvm_opt=""
-  fi
+fi
 
   echo -e "_compiler_name='$_compiler_name'\nllvm_opt='$llvm_opt'" >> "$_where"/BIG_UGLY_FROGMINER
 }
