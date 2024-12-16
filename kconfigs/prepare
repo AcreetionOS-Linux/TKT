@@ -367,7 +367,7 @@ _set_compiler(){
 
 if [ "$_compiler" = "llvm" ]; then
     _compiler_name="-llvm"
-    llvm_opt="LLVM=1 LLVM_IAS=${_llvm_ias:-0}"
+    llvm_opt="CC=clang CPP=clang-cpp CXX=clang++ LD=ld.lld RANLIB=llvm-ranlib STRIP=llvm-strip AR=llvm-ar AS=llvm-as NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump LLVM=1 LLVM_IAS=${_llvm_ias:-0}"
 
     if [ $_kver -ge 512 ]; then
         # LTO Selection
@@ -386,7 +386,7 @@ if [ "$_compiler" = "llvm" ]; then
             _lto_mode="${_lto_mode_array[$_selected_index]}"
         fi
         if [ "$_lto_mode" != "no" ]; then
-            llvm_opt="LLVM=1 LLVM_IAS=1"
+                llvm_opt="CC=clang CPP=clang-cpp CXX=clang++ LD=ld.lld RANLIB=llvm-ranlib STRIP=llvm-strip AR=llvm-ar AS=llvm-as NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump LLVM=1 LLVM_IAS=1"
         fi
 
         # PGO Selection
