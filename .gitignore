@@ -2,6 +2,7 @@
 !.github
 !.gitignore
 *~
+*.config
 *.orig
 *.log
 *.run
