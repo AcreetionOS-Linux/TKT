@@ -155,7 +155,7 @@ hackbase() {
   echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
   msg2 "Installing modules..."
-  ZSTD_CLEVEL=9 make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
+  make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
     DEPMOD=/doesnt/exist modules_install  # Suppress depmod
 
   # remove build and source links
@@ -219,6 +219,11 @@ hackheaders() {
 
   # add resolve_btfids on 5.16+
   if [[ $_basever = 6* ]] || [ $_basever -ge 516 ]; then
+    cd "$builddir"/tools/bpf/resolve_btfids
+    if [ "$_compiler_name" = "llvm" ]; then
+       make ${llvm_opts} ${_force_all_threads}
+    else
+       make ${_force_all_threads}
     install -Dt "$builddir"/tools/bpf/resolve_btfids tools/bpf/resolve_btfids/resolve_btfids || ( warning "$builddir/tools/bpf/resolve_btfids was not found. This is undesirable and might break dkms modules !!! Please review your config changes and consider using the provided defconfig and tweaks without further modification." && read -rp "Press enter to continue anyway" )
   fi
 
