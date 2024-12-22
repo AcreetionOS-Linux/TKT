@@ -224,6 +224,7 @@ hackheaders() {
        make ${llvm_opts} ${_force_all_threads}
     else
        make ${_force_all_threads}
+    fi
     install -Dt "$builddir"/tools/bpf/resolve_btfids tools/bpf/resolve_btfids/resolve_btfids || ( warning "$builddir/tools/bpf/resolve_btfids was not found. This is undesirable and might break dkms modules !!! Please review your config changes and consider using the provided defconfig and tweaks without further modification." && read -rp "Press enter to continue anyway" )
   fi
 
