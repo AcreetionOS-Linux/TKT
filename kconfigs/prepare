@@ -27,12 +27,11 @@ if [[ -z "$_git_mirror" ]]; then
   if ! timeout 5 git ls-remote ${_kernel_git_remotes[$_git_mirror]} >/dev/null || [[ "$( git ls-remote ${_kernel_git_remotes[$_git_mirror]} | head -n 1 )" = *502* ]]; then
     warning "Mirror unreachable or too long to respond"
     _git_mirror="${_git_remote_names[0]}"
+  elif [[ "$_git_mirror" == "drm" ]]; then
+    git clone "${_kernel_git_remotes[$_git_mirror]}" "linux"
   fi
   echo "Defaulting to ${_git_mirror} git mirror"
 fi
-
-# Clone the repository as "linux"
-git clone "${_kernel_git_remotes[$_git_mirror]}" "linux"
 
 # Fill out the latest tags map/dictionary
 _kernel_tags=$(git -c 'versionsort.suffix=-' \
