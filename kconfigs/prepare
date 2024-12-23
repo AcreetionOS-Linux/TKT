@@ -12,6 +12,7 @@ _kernel_git_remotes=(
   ["googlesource.com"]="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable"
   ["github.com"]="https://github.com/gregkh/linux.git"
   ["torvalds"]="https://github.com/torvalds/linux.git"
+  ["drm"]="https://anongit.freedesktop.org/git/drm/drm.git"
 )
 
 _git_remote_names=( "${!_kernel_git_remotes[@]}" )
