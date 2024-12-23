@@ -31,6 +31,9 @@ if [[ -z "$_git_mirror" ]]; then
   echo "Defaulting to ${_git_mirror} git mirror"
 fi
 
+# Clone the repository as "linux"
+git clone "${_kernel_git_remotes[$_git_mirror]}" "linux"
+
 # Fill out the latest tags map/dictionary
 _kernel_tags=$(git -c 'versionsort.suffix=-' \
   ls-remote --exit-code --refs --sort='version:refname' --tags ${_kernel_git_remotes[$_git_mirror]} '*.*' \
