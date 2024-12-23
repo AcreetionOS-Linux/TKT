@@ -31,11 +31,9 @@ if [[ -z "$_git_mirror" ]]; then
   echo "Defaulting to ${_git_mirror} git mirror"
 fi
 
-# Handle the 'drm' repo separately for kernel tags
+# Handle renaming of 'drm' repository to 'linux' during cloning
 if [[ "$_git_mirror" == "drm" ]]; then
-  echo "Using drm repo: Cloning as 'linux'"
-  git clone "${_kernel_git_remotes[$_git_mirror]}" "linux"
-  _kernel_tags=$(git -C linux tag | grep -E "^v[0-9]+\.[0-9]+")
+  git clone "${_kernel_git_remotes[$_git_mirror]}" "linux"  # Rename 'drm' repo to 'linux'
 else
 # Fill out the latest tags map/dictionary
 _kernel_tags=$(git -c 'versionsort.suffix=-' \
