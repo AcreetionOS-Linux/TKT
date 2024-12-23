@@ -27,16 +27,21 @@ if [[ -z "$_git_mirror" ]]; then
   if ! timeout 5 git ls-remote ${_kernel_git_remotes[$_git_mirror]} >/dev/null || [[ "$( git ls-remote ${_kernel_git_remotes[$_git_mirror]} | head -n 1 )" = *502* ]]; then
     warning "Mirror unreachable or too long to respond"
     _git_mirror="${_git_remote_names[0]}"
-  elif [[ "$_git_mirror" == "drm" ]]; then
-    git clone "${_kernel_git_remotes[$_git_mirror]}" "linux"
   fi
   echo "Defaulting to ${_git_mirror} git mirror"
 fi
 
+# Handle the 'drm' repo separately for kernel tags
+if [[ "$_git_mirror" == "drm" ]]; then
+  echo "Using drm repo: Cloning as 'linux'"
+  git clone "${_kernel_git_remotes[$_git_mirror]}" "linux"
+  _kernel_tags=$(git -C linux tag | grep -E "^v[0-9]+\.[0-9]+")
+else
 # Fill out the latest tags map/dictionary
 _kernel_tags=$(git -c 'versionsort.suffix=-' \
   ls-remote --exit-code --refs --sort='version:refname' --tags ${_kernel_git_remotes[$_git_mirror]} '*.*' \
   | cut --delimiter='/' --fields=3)
+fi
 
 typeset -Ag _kver_latest_tags_map
 for _key in "${_current_kernels[@]}" "${_eol_kernels[@]}"; do
