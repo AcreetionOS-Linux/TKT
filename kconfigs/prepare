@@ -12,7 +12,6 @@ _kernel_git_remotes=(
   ["googlesource.com"]="https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable"
   ["github.com"]="https://github.com/gregkh/linux.git"
   ["torvalds"]="https://github.com/torvalds/linux.git"
-  ["drm"]="https://anongit.freedesktop.org/git/drm/drm.git"
 )
 
 _git_remote_names=( "${!_kernel_git_remotes[@]}" )
@@ -31,15 +30,10 @@ if [[ -z "$_git_mirror" ]]; then
   echo "Defaulting to ${_git_mirror} git mirror"
 fi
 
-# Handle renaming of 'drm' repository to 'linux' during cloning
-if [[ "$_git_mirror" == "drm" ]]; then
-  git clone "${_kernel_git_remotes[$_git_mirror]}" "linux"  # Rename 'drm' repo to 'linux'
-else
 # Fill out the latest tags map/dictionary
 _kernel_tags=$(git -c 'versionsort.suffix=-' \
   ls-remote --exit-code --refs --sort='version:refname' --tags ${_kernel_git_remotes[$_git_mirror]} '*.*' \
   | cut --delimiter='/' --fields=3)
-fi
 
 typeset -Ag _kver_latest_tags_map
 for _key in "${_current_kernels[@]}" "${_eol_kernels[@]}"; do
