@@ -217,8 +217,8 @@ hackheaders() {
   # add xfs and shmem for aufs building
   mkdir -p "$builddir"/{fs/xfs,mm}
 
-  # add resolve_btfids on 5.16+
-  if [[ $_basever = 6* ]] || [ $_basever -ge 516 ]; then
+  # add resolve_btfids
+  if [[ $_basever = 6* ]]; then
     cd "$builddir"/tools/bpf/resolve_btfids
     if [ "$_compiler_name" = "llvm" ]; then
        make ${llvm_opts} ${_force_all_threads}
