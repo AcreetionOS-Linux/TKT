@@ -217,17 +217,7 @@ hackheaders() {
   # add xfs and shmem for aufs building
   mkdir -p "$builddir"/{fs/xfs,mm}
 
-  # add resolve_btfids
-  if [[ $_basever = 6* ]]; then
-    cd "$builddir"/tools/bpf/resolve_btfids
-    if [ "$_compiler_name" = "llvm" ]; then
-       make ${llvm_opts} ${_force_all_threads}
-    else
-       make ${_force_all_threads}
-    fi
-    install -Dt "$builddir"/tools/bpf/resolve_btfids tools/bpf/resolve_btfids/resolve_btfids || ( warning "$builddir/tools/bpf/resolve_btfids was not found. This is undesirable and might break dkms modules !!! Please review your config changes and consider using the provided defconfig and tweaks without further modification." && read -rp "Press enter to continue anyway" )
-  fi
-
+  # Install headers
   msg2 "Installing headers..."
   cp -t "$builddir" -a include
   cp -t "$builddir/arch/x86" -a arch/x86/include
