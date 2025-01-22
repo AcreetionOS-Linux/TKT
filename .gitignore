@@ -28,3 +28,4 @@ gnupg/
 current_env
 linux-kernel.git/
 linux-src-git/
+*-userpatches/
