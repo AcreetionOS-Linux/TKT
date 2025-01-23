@@ -270,7 +270,7 @@ hackheaders() {
 
   msg2 "Adding symlink..."
   mkdir -p "$pkgdir/usr/src"
-  cp -a "$builddir" "$pkgdir/usr/src/$pkgbase"
+  ln -sf "$builddir" "$pkgdir/usr/src/$pkgbase"
 
   if [ "$_STRIP" = "true" ]; then
     echo "Stripping vmlinux..."
