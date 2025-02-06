@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of kernels that are maintained upstream
-_current_kernels=("6.13" "6.12" "6.6" "6.1")
+_current_kernels=("6.14" "6.13" "6.12" "6.6" "6.1")
 
 # List of kernels that are no longer maintained either upstream or locally
 _eol_kernels=("6.11" "6.10" "6.9" "6.8" "6.7" "6.5" "6.4" "6.3" "6.2" "6.0")
@@ -268,33 +268,17 @@ _set_cpu_scheduler() {
   )
 
   # CPU SCHED selector - _projectc_unoff=1 sets unofficial Project C revision flag for a given version
-  if [ "$_kver" = "600" ]; then
+  if [ "$_kver" = "601" ]; then
     _avail_cpu_scheds=("cfs"  "tt" "bore")
-  elif [ "$_kver" = "601" ]; then
-    _avail_cpu_scheds=("cfs"  "tt" "bore")
-  elif [ "$_kver" = "602" ]; then
-    _avail_cpu_scheds=("cfs"  "tt" "bore")
-  elif [ "$_kver" = "603" ]; then
-    _avail_cpu_scheds=("cfs"  "tt" "bore")
-  elif [ "$_kver" = "604" ]; then
-    _avail_cpu_scheds=("cfs" "eevdf"  "tt" "bore")
-  elif [ "$_kver" = "605" ]; then
-    _avail_cpu_scheds=("cfs" "eevdf"  "tt" "bore" "bore-eevdf")
   elif [ "$_kver" = "606" ]; then
-    _avail_cpu_scheds=("eevdf" "bore" )
-  elif [ "$_kver" = "607" ]; then
-    _avail_cpu_scheds=("eevdf" "bore" "echo" )
-  elif [ "$_kver" = "608" ]; then
-    _avail_cpu_scheds=("eevdf" "bore" "echo" )
-  elif [ "$_kver" = "609" ]; then
-    _avail_cpu_scheds=("eevdf" "bore" )
-  elif [ "$_kver" = "610" ]; then
     _avail_cpu_scheds=("eevdf" "bore" )
   elif [ "$_kver" = "611" ]; then
     _avail_cpu_scheds=("eevdf" "bore" )
   elif [ "$_kver" = "612" ]; then
     _avail_cpu_scheds=("eevdf" "bore" )
   elif [ "$_kver" = "613" ]; then
+    _avail_cpu_scheds=("eevdf" "bore" )
+  elif [ "$_kver" = "614" ]; then
     _avail_cpu_scheds=("eevdf" "bore" )
   else
     _avail_cpu_scheds=("$_default_cpu_sched")
