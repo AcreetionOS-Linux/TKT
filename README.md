@@ -1,3 +1,6 @@
+# DO NOT IGNORE! YOU MUST READ THIS BEFORE YOU EVEN CLONE THE REPO IN ORDER TO USE IT!
+
+
 ## TꓘT - A TKG fork
 
 - Please checkout the [CONTRIBUTIONS_GUIDELINE.MD](https://github.com/ETJAKEOC/TKT/blob/Alpha/CONTRIBUTION_GUIDELINE.md) file for information about collaboration.
