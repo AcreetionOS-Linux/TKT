@@ -9,7 +9,7 @@ I am not all *that* picky about how this project evolves, I have a simple policy
 > patches, Android device support, Microsoft Surface devices, etc etc.
 
 All in all, the goal is to keep the user in control of their kernel. We will provide them with a nice
-baseline to start with, with kernel debugging disable as it should be in a production level kernel,
+baseline to start with, with kernel debugging (mostly) disable as it should be in a production level kernel,
 small tweaks to what compression algorithms the kernel/initramfs use to aim for speed during boot,
 switching the zswap/zram compression algorithims to take advantage of multi-core CPU's,
 removing support for CAN bus and HAM radio hardware for desktop PC kernels, this list goes on and on.
