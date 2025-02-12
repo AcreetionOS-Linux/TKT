@@ -1,5 +1,5 @@
 # DO NOT IGNORE! YOU MUST READ THIS BEFORE YOU EVEN CLONE THE REPO IN ORDER TO USE IT!
-### Most questions you can ask will be answered in this file.
+### Most questions you can ask will be answered in this file, or in the `GUIDE.md` file.
 
 ## TꓘT - A TKG fork
 
