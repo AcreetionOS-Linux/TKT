@@ -143,4 +143,4 @@ cd TKT
 
 #### Included script!!!
 You may notice a random script file in this repository called `initramfs-and-grub-update.sh`. This script *should* provide you with the most basic setup to recompile your initramfs, and resetup the GRUB2 bootmenu after compiling your kernel.
-This has not been tested on all systemd, results may vary, you may have to adapt to fit your system.
+This has not been tested on all systems, results may vary, you may have to adapt to fit your system.
