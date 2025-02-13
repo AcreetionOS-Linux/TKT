@@ -154,7 +154,7 @@ if [ "$1" = "install" ]; then
   if [ "$_force_all_threads" = "true" ]; then
     _thread_num=`nproc`
   else
-    _thread_num=`expr \`nproc\` / 4`
+    _thread_num=`expr \`nproc\` - 4`
     if [ "$_thread_num" = "0" ]; then
       _thread_num=1
     fi
